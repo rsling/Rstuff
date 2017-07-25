@@ -1,22 +1,12 @@
 require(lme4)
 
-# Inspired from (but heavily modified):
-# http://anythingbutrbitrary.blogspot.de/2012/10/hierarchical-linear-models-and-lmer.html
-
-
-# Model:
-# y=Xϕ+Zb+ϵ,
-
 rm(list = ls())
-set.seed(6854)   # date +%s%N | md5sum | tr -dC '[^0-9]' | cut -c1-4
+set.seed(6226)   # date +%s%N | md5sum | tr -dC '[^0-9]' | cut -c1-4
 
 # Units = Groups 
 #                counter:     i
 #                intercept:   alpha_i
 #                slope:       beta_i
-#
-#                *2nd level*
-#                linear pred: a_i
 #
 # Measurements  counter:       j
 #
@@ -28,25 +18,8 @@ set.seed(6854)   # date +%s%N | md5sum | tr -dC '[^0-9]' | cut -c1-4
 
 N <- 30  #  Number of groups.
 
-# These are the second-level linear predictors.
-unit.df = data.frame(unit = c(1:N), a = rnorm(N))
-
-# These are the second-level linear models given the
-# a effect. Or rather, this used a linear model
-# to calculate the effective group intercepts and
-# slopes from the a effect. These are "idealised"
-# inasmuch as they would allow PERFECT prediction
-# of the group intcp and slope from a, which
-# means eliminating random between-group variance.
-
-unit.df <-  within(unit.df, {
-  E.alpha.given.a <-  1 - 0.15 * a
-  E.beta.given.a  <-  3 + 0.30 * a
-})
-
 
 # Generate the random intercepts and slopes
-
 library(mvtnorm)
 
 q = 0.2  # Intercept SD.
@@ -67,10 +40,10 @@ random.effects <-  rmvnorm(N, mean = c(0, 0), sigma = cov.matrix)
 #   ⎝  r*q*s   s^2  ⎠
 #
 
-# Add random variance (random effects) to idealised intercepts and slopes.
-# This is what linguists think "random intcpt and slope" means exclusively.
-unit.df$alpha <- unit.df$E.alpha.given.a + random.effects[, 1]
-unit.df$beta  <- unit.df$E.beta.given.a  + random.effects[, 2]
+# Create random effects.
+unit.df = data.frame(unit = c(1:N))
+unit.df$alpha <- random.effects[, 1]
+unit.df$beta  <- random.effects[, 2]
 
 
 ###### MEASUREMENTS (or INDIVIDUALS) ######
@@ -94,7 +67,7 @@ flat.df <- merge(unit.df, within.unit.df)  # natural join using "unit"
 flat.df <- within(flat.df, y <- alpha + x * beta + 0.75 * rnorm(n = M))
 
 # Reduce to information we would have in actual experiment.
-simple.df <-  flat.df[, c("unit", "a", "x", "y")]
+simple.df <-  flat.df[, c("unit", "x", "y")]
 
 # WHAT DOES THIS MEAN EXACTLY?
 # For the purpose of comparison, we'll keep track of the Akaike information criterion (AIC),
@@ -109,9 +82,17 @@ simple.df <-  flat.df[, c("unit", "a", "x", "y")]
 
 # Calculate random effects model.
 # This is how it is done in lmer, see Gelman & Hill (2007:303ff).
-raneff.lmer <-  lmer(y ~ x + a + x : a + (1 + x | unit), data = simple.df)
+raneff.lmer <-  lmer(y ~ x + (1 + x | unit), data = simple.df)
 print(summary(raneff.lmer))
 
 # Compare with simple LM, ignoring random effects.
 fixeff.lm <-  lm(y ~ x , data = simple.df)
 print(summary(fixeff.lm))
+
+par(mfrow=c(2,2))
+plot(fixeff.lm)
+par(mfrow=c(1,1))
+
+plot(raneff.lmer)
+
+

@@ -1,11 +1,5 @@
 require(lme4)
 
-# Inspired from (but heavily modified):
-# http://anythingbutrbitrary.blogspot.de/2012/10/hierarchical-linear-models-and-lmer.html
-
-
-# Model:
-# y=Xϕ+Zb+ϵ,
 
 rm(list = ls())
 set.seed(6854)   # date +%s%N | md5sum | tr -dC '[^0-9]' | cut -c1-4
