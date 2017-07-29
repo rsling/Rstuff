@@ -160,8 +160,8 @@ legend("topright",
 
 
 par(mfrow=c(2,4))
-alpas0.sample.plot <- sort(sample(1:nrow(unique(alphas0)), size = 8, replace = F))
-for (i in alpas0.sample.plot) {
+alphas0.sample.plot <- sort(sample(1:nrow(unique(alphas0)), size = 8, replace = F))
+for (i in alphas0.sample.plot) {
   true <- unique(alphas0)[order(unique(alphas0$group0)),][i,2]
   plot(density(raneffs.group0[,i]),
        xlim = c( min(0, c(true, as.matrix(raneffs.group0[,i]))), max(c(0, true, as.matrix(raneffs.group0[,i])))),
@@ -175,15 +175,17 @@ par(mfrow=c(1,1))
 
 
 par(mfrow=c(2,4))
-alpas1.sample.plot <- sort(sample(1:nrow(unique(alphas1)), size = 8, replace = F))
+alphas1.sample.plot <- sort(sample(1:nrow(unique(alphas1)), size = 8, replace = F))
 for (i in 1:nrow(unique(alphas1))) {
-  true <- unique(alphas1)[order(unique(alphas1$group1)),][i,2]
-  plot(density(raneffs.group1[,i]),
-       xlim = c( min(c(0, true, as.matrix(raneffs.group1[,i]))), max(0, c(true, as.matrix(raneffs.group1[,i])))),
-       xlab = "Predicted alpha", main = paste0("J1_", unique(alphas1)[i,1]),
-       lwd = lwd.small, col = colfunc(8)[i])
-  abline(v = true, lwd = lwd.small, col = colfunc(8)[i], lty = 3)
-  abline(v = 0, lwd = lwd.null, col = "gray", lty = lty.null)
+  if (i %in% alphas1.sample.plot) {
+    true <- unique(alphas1)[order(unique(alphas1$group1)),][i,2]
+    plot(density(raneffs.group1[,i]),
+         xlim = c( min(c(0, true, as.matrix(raneffs.group1[,i]))), max(c(0, true, as.matrix(raneffs.group1[,i])))),
+         xlab = "Predicted alpha", main = paste0("J1_", unique(alphas1)[i,1]),
+       lwd = lwd.small, col = colfunc(8)[ match(i, alphas1.sample.plot)  ])
+    abline(v = true, lwd = lwd.small, col = colfunc(8)[ match(i, alphas1.sample.plot) ], lty = 3)
+    abline(v = 0, lwd = lwd.null, col = "gray", lty = lty.null)
+  }
 }
 par(mfrow=c(1,1))
 

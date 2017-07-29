@@ -24,7 +24,7 @@ do.r2      <- T
 
 colfunc    <- colorRampPalette(c("gold", "darkblue"))
 lwd        <- 3
-lwd.small  <- 3
+lwd.small  <- 2
 lwd.null   <- 1.5
 lty.null   <- 5
 
@@ -76,7 +76,10 @@ for (i in 1:nsim) {
 true.raneffs <- .run$raneffs
 
 # NaN were turned to NA in loop, remove.
-Sigmas <- Sigmas[complete.cases(Sigmas),]
+n.Sigmas <- nrow(Sigmas) 
+Sigmas   <- Sigmas[complete.cases(Sigmas),]
+m.Sigmas <- n.Sigmas-nrow(Sigmas)
+cat("\nFailed runs (NaN in variances):", m.Sigmas)
 
 
 par(mfrow=c(1,1))
@@ -117,8 +120,9 @@ legend("topleft",
        lwd = lwd)
 
 
-par(mfrow=c(2,5))
-for (i in 1:nrow(true.raneffs)) {
+par(mfrow=c(2,4))
+alphas.sample.plot <- sort(sample(1:nrow(true.raneffs), size = 8, replace = F))
+for (i in alphas.sample.plot) {
   plot(density(raneffs.alpha[,i]),
        xlim = c( min(0, c(true.raneffs[i,"alpha"], as.matrix(raneffs.alpha[,i]))), max(c(0, true.raneffs[i,"alpha"], as.matrix(raneffs.alpha[,i])))),
        xlab = "Predicted alpha", main = paste0("J_", i),
@@ -129,8 +133,8 @@ for (i in 1:nrow(true.raneffs)) {
 par(mfrow=c(1,1))
 
 
-par(mfrow=c(2,5))
-for (i in 1:nrow(true.raneffs)) {
+par(mfrow=c(2,4))
+for (i in alphas.sample.plot) {
   plot(density(raneffs.beta[,i]),
        xlim = c( min(0, c(true.raneffs[i,"beta"], as.matrix(raneffs.beta[,i]))), max(c(0, true.raneffs[i,"beta"], as.matrix(raneffs.beta[,i])))),
        xlab = "Predicted beta", main = paste0("J_", i),
