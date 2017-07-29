@@ -16,5 +16,6 @@ for (i in 1:nsim) {
 }
 
 par(mfrow=c(1,1))
-plot(sims)
+plot(sims, pch=19, cex=0.1, col = "darkgreen")
+plot(ecdf(sims))
 hist(sims, breaks = 100)

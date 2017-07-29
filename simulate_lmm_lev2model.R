@@ -2,7 +2,7 @@ require(lme4)
 
 
 rm(list = ls())
-set.seed(6854)   # date +%s%N | md5sum | tr -dC '[^0-9]' | cut -c1-4
+set.seed(6854)
 
 # Units = Groups 
 #                counter:     i
@@ -109,3 +109,11 @@ print(summary(raneff.lmer))
 # Compare with simple LM, ignoring random effects.
 fixeff.lm <-  lm(y ~ x , data = simple.df)
 print(summary(fixeff.lm))
+
+
+par(mfrow=c(2,2))
+plot(fixeff.lm)
+par(mfrow=c(1,1))
+
+plot(raneff.lmer)
+

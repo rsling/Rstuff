@@ -1,7 +1,7 @@
 require(lme4)
 
 rm(list = ls())
-set.seed(6226)   # date +%s%N | md5sum | tr -dC '[^0-9]' | cut -c1-4
+#set.seed(6226)   # date +%s%N | md5sum | tr -dC '[^0-9]' | cut -c1-4
 
 # Units = Groups 
 #                counter:     i
@@ -69,30 +69,19 @@ flat.df <- within(flat.df, y <- alpha + x * beta + 0.75 * rnorm(n = M))
 # Reduce to information we would have in actual experiment.
 simple.df <-  flat.df[, c("unit", "x", "y")]
 
-# WHAT DOES THIS MEAN EXACTLY?
-# For the purpose of comparison, we'll keep track of the Akaike information criterion (AIC),
-# a general-purpose criterion for model comparison. Smaller is better, and there is good
-# reason to believe we will find a model with a smaller AIC. For while αi and βi vary,
-# they vary not about fixed means, but rather about conditional means given ai.
-#
-# => OK, they vary around the "idealised" group means introduced at the outset. I think
-#    this is what he means.
-# => YES, he does. They vary because there is a second-level model, and they vary
-#    IN ADDITION TO THAT because there is random between-level variance.
-
 # Calculate random effects model.
 # This is how it is done in lmer, see Gelman & Hill (2007:303ff).
 raneff.lmer <-  lmer(y ~ x + (1 + x | unit), data = simple.df)
 print(summary(raneff.lmer))
-
-# Compare with simple LM, ignoring random effects.
-fixeff.lm <-  lm(y ~ x , data = simple.df)
-print(summary(fixeff.lm))
-
-par(mfrow=c(2,2))
-plot(fixeff.lm)
-par(mfrow=c(1,1))
-
-plot(raneff.lmer)
-
-
+# 
+# # Compare with simple LM, ignoring random effects.
+# fixeff.lm <-  lm(y ~ x , data = simple.df)
+# print(summary(fixeff.lm))
+# 
+# par(mfrow=c(2,2))
+# plot(fixeff.lm)
+# par(mfrow=c(1,1))
+# 
+# plot(raneff.lmer)
+# 
+# 

@@ -1,6 +1,8 @@
 
 
- Random effects model (two nested effects).
+
+ === Random effects model (two nested effects) === 
+
 
 Generalized linear mixed model fit by maximum likelihood (Laplace Approximation) ['glmerMod']
  Family: binomial  ( logit )
@@ -36,7 +38,9 @@ x2           0.070 -0.145
 0.2870971 0.3247956 
 
 
- Random effects model with explicit / notation.
+
+ === Random effects model with explicit / notation === 
+
 
 Generalized linear mixed model fit by maximum likelihood (Laplace Approximation) ['glmerMod']
  Family: binomial  ( logit )
@@ -72,7 +76,9 @@ x2           0.070 -0.145
 0.2870971 0.3247956 
 
 
- Fixed effects-only model.
+
+ === Fixed effects-only model === 
+
 
 
 Call:
