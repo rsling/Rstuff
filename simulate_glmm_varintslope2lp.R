@@ -43,19 +43,19 @@ if (use.saved) {
   colnames(fixefs)         <- c('alpha0', 'beta0', 'beta1')
   colnames(r.squared)      <- c('marginal', 'conditional')
   colnames(Sigmas)         <- c('sigma_a', 'sigma_b', 'covar_ab')
-
-
+  
+  
   for (i in 1:nsim) {
     cat("Simulation run", i, "...\n")
     
     # In all except the first run, we re-use the alphas to get comparable results.
     if (i == 1) {
-      .run <- sim.glmm.varintslope(J = J, I = I,
+      .run <- sim.glmm.varintnested(J = J, I = I,
                                     beta1 = beta1, alpha0 = alpha0,
                                     sigma_a = sigma_b, sigma_b = sigma_b, rho = rho,
                                     do.raneff = do.raneff, do.fixeff = do.fixeff)
     } else {
-      .run <- sim.glmm.varintslop(J = J, I = I,
+      .run <- sim.glmm.varintnested(J = J, I = I,
                                     beta1 = beta1, alpha0 = alpha0,
                                     sigma_a = sigma_b, sigma_b = sigma_b, rho = rho,
                                     do.raneff = do.raneff, do.fixeff = do.fixeff,
@@ -71,7 +71,7 @@ if (use.saved) {
       warning('Covariance is NaN!')
     else
       Sigmas[i,]                <- as.data.frame(VarCorr(.run[["glmm"]]))[,"sdcor"]
-  
+    
   }
 }
 

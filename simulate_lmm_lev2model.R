@@ -107,13 +107,13 @@ raneff.lmer <-  lmer(y ~ x + a + x : a + (1 + x | unit), data = simple.df)
 print(summary(raneff.lmer))
 
 # Compare with simple LM, ignoring random effects.
-fixeff.lm <-  lm(y ~ x , data = simple.df)
-print(summary(fixeff.lm))
-
-
-par(mfrow=c(2,2))
-plot(fixeff.lm)
-par(mfrow=c(1,1))
-
-plot(raneff.lmer)
-
+# fixeff.lm <-  lm(y ~ x , data = simple.df)
+# print(summary(fixeff.lm))
+# 
+# 
+# par(mfrow=c(2,2))
+# plot(fixeff.lm)
+# par(mfrow=c(1,1))
+# 
+# plot(raneff.lmer)
+# 
