@@ -8,9 +8,8 @@ set.seed(3979)
 
 source("simulate_glmm_varintnested_fun.R")
 
-nsim <- 20
-
-# We use fixed random effects.
+use.saved       <- T
+nsim            <- 1000
 J0              <- 20
 J1              <- 20
 I               <- 20
@@ -34,88 +33,93 @@ lwd.small       <- 3
 lwd.null        <- 1.5
 lty.null        <- 5
 
-# Matrices for results: GLMM.
-raneffs.group0           <- as.data.frame(matrix(rep(NA, J0 * nsim),      nrow = nsim, byrow = T))
-raneffs.group1           <- as.data.frame(matrix(rep(NA, J1 * J0 * nsim), nrow = nsim, byrow = T))
-fixefs                   <- as.data.frame(matrix(rep(NA, 3 * nsim),       nrow = nsim, byrow = T))
-r.squared                <- as.data.frame(matrix(rep(NA, 2 * nsim),       nrow = nsim, byrow = T))
-raneff.var               <- as.data.frame(matrix(rep(NA, 2 * nsim),       nrow = nsim, byrow = T))
-colnames(raneffs.group0) <- paste0("group", 1:J0)
-colnames(raneffs.group1) <- paste0("group", 1:(J1*J0))
-colnames(fixefs)         <- c('intcpt', 'beta1', 'beta2')
-colnames(r.squared)      <- c('marginal', 'conditional')
-colnames(raneff.var)     <- c('sigma0', 'sigma1')
 
-
-# Matrices for results: GLMM with slash.
-if (do.raneff.slash) {
-  slash.raneffs.group0           <- as.data.frame(matrix(rep(NA, J0 * nsim),      nrow = nsim, byrow = T))
-  slash.raneffs.group1           <- as.data.frame(matrix(rep(NA, J1 * J0 * nsim), nrow = nsim, byrow = T))
-  slash.fixefs                   <- as.data.frame(matrix(rep(NA, 3 * nsim),       nrow = nsim, byrow = T))
-  slash.r.squared                <- as.data.frame(matrix(rep(NA, 2 * nsim),       nrow = nsim, byrow = T))
-  slash.raneff.var               <- as.data.frame(matrix(rep(NA, 2 * nsim),       nrow = nsim, byrow = T))
-  colnames(slash.raneffs.group0) <- paste0("group", 1:J0)
-  colnames(slash.raneffs.group1) <- paste0("group", 1:(J1*J0))
-  colnames(slash.fixefs)         <- c('intcpt', 'beta1', 'beta2')
-  colnames(slash.r.squared)      <- c('marginal', 'conditional')
-  colnames(slash.raneff.var)     <- c('sigma0', 'sigma1')
-}
-
-
-# RUN SIMULATIONS
-
-
-for (i in 1:nsim) {
-  cat("Simulation run", i, "...\n")
+if (use.saved) {
+  load("simulate_glmm_varintnested.RData")
+} else {
   
-  # In all except the first run, we re-use the alphas to get comparable results.
-  if (i == 1) {
-    .run <- sim.glmm.varintnested(nested = nested,
-                                  J0 = J0, J1 = J1, I = I, thin = thin,
-                                  beta1 = beta1, beta2 = beta2,
-                                  alpha = alpha,
-                                  sigma0 = sigma0, sigma1 = sigma1,
-                                  do.raneff = do.raneff, do.raneff.slash = do.raneff.slash, do.fixeff = do.fixeff)
-  } else {
-    .run <- sim.glmm.varintnested(nested = nested,
-                                  J0 = J0, J1 = J1, I = I, thin = thin,
-                                  beta1 = beta1, beta2 = beta2,
-                                  alpha = alpha,
-                                  sigma0 = sigma0, sigma1 = sigma1,
-                                  alphas0 = .run[["alphas0"]], alphas1 = .run[["alphas1"]],
-                                  do.raneff = do.raneff, do.raneff.slash = do.raneff.slash, do.fixeff = do.fixeff)
-  }
+  # Matrices for results: GLMM.
+  raneffs.group0           <- as.data.frame(matrix(rep(NA, J0 * nsim),      nrow = nsim, byrow = T))
+  raneffs.group1           <- as.data.frame(matrix(rep(NA, J1 * J0 * nsim), nrow = nsim, byrow = T))
+  fixefs                   <- as.data.frame(matrix(rep(NA, 3 * nsim),       nrow = nsim, byrow = T))
+  r.squared                <- as.data.frame(matrix(rep(NA, 2 * nsim),       nrow = nsim, byrow = T))
+  raneff.var               <- as.data.frame(matrix(rep(NA, 2 * nsim),       nrow = nsim, byrow = T))
+  colnames(raneffs.group0) <- paste0("group", 1:J0)
+  colnames(raneffs.group1) <- paste0("group", 1:(J1*J0))
+  colnames(fixefs)         <- c('intcpt', 'beta1', 'beta2')
+  colnames(r.squared)      <- c('marginal', 'conditional')
+  colnames(raneff.var)     <- c('sigma0', 'sigma1')
   
-  # Checker whether groups are correctly aligned in data frames.
-  if ( !all( unique(as.character(.run[["alphas0"]]$group0)) %in% rownames(ranef(.run[["glmm"]])$group0))  )
-    stop('Level names in pre-specified list alpha0 is not a subset of those in ranef(glmm)$group0.')
-
-  if ( !all( unique(as.character(.run[["alphas1"]]$group1)) %in% rownames(ranef(.run[["glmm"]])$group1))  )
-    stop('Level names in pre-specified list alpha1 is not a subset of those in ranef(glmm)$group1.')
   
-
-  # Get normal GLMM results.
-  raneffs.group0[i, ]       <- unlist(ranef(.run[["glmm"]])$group0)
-  raneffs.group1[i, ]       <- unlist(ranef(.run[["glmm"]])$group1)
-  fixefs[i,]                <- fixef(.run[["glmm"]])
-  if (do.r2) r.squared[i,]  <- r.squaredGLMM(.run[["glmm"]])
-  raneff.var[i,1]           <- as.numeric(VarCorr(.run[["glmm"]])$group0)
-  raneff.var[i,2]           <- as.numeric(VarCorr(.run[["glmm"]])$group1)
-
-  # Get GLMM with slash syntax results.  
+  # Matrices for results: GLMM with slash.
   if (do.raneff.slash) {
-    slash.raneffs.group0[i, ]      <- unlist(ranef(.run[["glmm.slash"]])$group0)
-    slash.raneffs.group1[i, ]      <- unlist(ranef(.run[["glmm.slash"]])$group1)
-    slash.fixefs[i,]               <- fixef(.run[["glmm.slash"]])
-    if (do.r2) slash.r.squared[i,] <- r.squaredGLMM(.run[["glmm.slash"]])
-    slash.raneff.var[i,1]          <- as.numeric(VarCorr(.run[["glmm.slash"]])$group0)
-    slash.raneff.var[i,2]          <- as.numeric(VarCorr(.run[["glmm.slash"]])$group1)
+    slash.raneffs.group0           <- as.data.frame(matrix(rep(NA, J0 * nsim),      nrow = nsim, byrow = T))
+    slash.raneffs.group1           <- as.data.frame(matrix(rep(NA, J1 * J0 * nsim), nrow = nsim, byrow = T))
+    slash.fixefs                   <- as.data.frame(matrix(rep(NA, 3 * nsim),       nrow = nsim, byrow = T))
+    slash.r.squared                <- as.data.frame(matrix(rep(NA, 2 * nsim),       nrow = nsim, byrow = T))
+    slash.raneff.var               <- as.data.frame(matrix(rep(NA, 2 * nsim),       nrow = nsim, byrow = T))
+    colnames(slash.raneffs.group0) <- paste0("group", 1:J0)
+    colnames(slash.raneffs.group1) <- paste0("group", 1:(J1*J0))
+    colnames(slash.fixefs)         <- c('intcpt', 'beta1', 'beta2')
+    colnames(slash.r.squared)      <- c('marginal', 'conditional')
+    colnames(slash.raneff.var)     <- c('sigma0', 'sigma1')
   }
+  
+  
+  # RUN SIMULATIONS
+  
+  
+  for (i in 1:nsim) {
+    cat("Simulation run", i, "...\n")
+    
+    # In all except the first run, we re-use the alphas to get comparable results.
+    if (i == 1) {
+      .run <- sim.glmm.varintnested(nested = nested,
+                                    J0 = J0, J1 = J1, I = I, thin = thin,
+                                    beta1 = beta1, beta2 = beta2,
+                                    alpha = alpha,
+                                    sigma0 = sigma0, sigma1 = sigma1,
+                                    do.raneff = do.raneff, do.raneff.slash = do.raneff.slash, do.fixeff = do.fixeff)
+    } else {
+      .run <- sim.glmm.varintnested(nested = nested,
+                                    J0 = J0, J1 = J1, I = I, thin = thin,
+                                    beta1 = beta1, beta2 = beta2,
+                                    alpha = alpha,
+                                    sigma0 = sigma0, sigma1 = sigma1,
+                                    alphas0 = .run[["alphas0"]], alphas1 = .run[["alphas1"]],
+                                    do.raneff = do.raneff, do.raneff.slash = do.raneff.slash, do.fixeff = do.fixeff)
+    }
+    
+    # Checker whether groups are correctly aligned in data frames.
+    if ( !all( unique(as.character(.run[["alphas0"]]$group0)) %in% rownames(ranef(.run[["glmm"]])$group0))  )
+      stop('Level names in pre-specified list alpha0 is not a subset of those in ranef(glmm)$group0.')
+  
+    if ( !all( unique(as.character(.run[["alphas1"]]$group1)) %in% rownames(ranef(.run[["glmm"]])$group1))  )
+      stop('Level names in pre-specified list alpha1 is not a subset of those in ranef(glmm)$group1.')
+    
+  
+    # Get normal GLMM results.
+    raneffs.group0[i, ]       <- unlist(ranef(.run[["glmm"]])$group0)
+    raneffs.group1[i, ]       <- unlist(ranef(.run[["glmm"]])$group1)
+    fixefs[i,]                <- fixef(.run[["glmm"]])
+    if (do.r2) r.squared[i,]  <- r.squaredGLMM(.run[["glmm"]])
+    raneff.var[i,1]           <- as.numeric(VarCorr(.run[["glmm"]])$group0)
+    raneff.var[i,2]           <- as.numeric(VarCorr(.run[["glmm"]])$group1)
+  
+    # Get GLMM with slash syntax results.  
+    if (do.raneff.slash) {
+      slash.raneffs.group0[i, ]      <- unlist(ranef(.run[["glmm.slash"]])$group0)
+      slash.raneffs.group1[i, ]      <- unlist(ranef(.run[["glmm.slash"]])$group1)
+      slash.fixefs[i,]               <- fixef(.run[["glmm.slash"]])
+      if (do.r2) slash.r.squared[i,] <- r.squaredGLMM(.run[["glmm.slash"]])
+      slash.raneff.var[i,1]          <- as.numeric(VarCorr(.run[["glmm.slash"]])$group0)
+      slash.raneff.var[i,2]          <- as.numeric(VarCorr(.run[["glmm.slash"]])$group1)
+    }
+  }
+  # Save the alphas as actually used.
+  alphas0             <- .run[["alphas0"]]
+  alphas1             <- .run[["alphas1"]]
 }
-
-# Save the alphas as actually used.
-alphas0             <- .run[["alphas0"]]
-alphas1             <- .run[["alphas1"]]
 
 
 # PLOTS
@@ -199,10 +203,15 @@ if (do.r2) {
        main = "Estimates of R-squared",
        xlab = "Estimates")
   lines(density(r.squared[,2]), col = "darkgreen", lwd = lwd)
-  legend("topright",
+  legend("top",
          legend = c("marginal R-squared", "conditional R-squared"),
          col = c("darkorange", "darkgreen"),
          lwd = lwd)
 }
 
-save.image(file = "simulate_glmm_varintnested.RData")
+cat("\n\n Difference between marginal and conditional R-squared (95% interval)\n")
+print(quantile(ecdf(r.squared[,2]-r.squared[,1]), probs = c(0.025, 0.975)))
+cat("\n")
+
+
+if (!use.saved) save.image(file = "simulate_glmm_varintnested.RData")

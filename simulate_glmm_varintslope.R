@@ -8,10 +8,10 @@ set.seed(2707)
 
 source("simulate_glmm_varintslope_fun.R")
 
+use.saved  <- F
 nsim       <- 20
-
-J          <-  20
-I          <-  20
+J          <-  100
+I          <-  100
 beta0      <-  1
 beta1      <-  0.8
 alpha0     <- -0.5
@@ -28,48 +28,51 @@ lwd.small  <- 2
 lwd.null   <- 1.5
 lty.null   <- 5
 
-
-# Matrices for results: GLMM.
-raneffs.alpha            <- as.data.frame(matrix(rep(NA, J * nsim), nrow = nsim, byrow = T))
-raneffs.beta             <- as.data.frame(matrix(rep(NA, J * nsim), nrow = nsim, byrow = T))
-fixefs                   <- as.data.frame(matrix(rep(NA, 3 * nsim), nrow = nsim, byrow = T))
-r.squared                <- as.data.frame(matrix(rep(NA, 2 * nsim), nrow = nsim, byrow = T))
-Sigmas                   <- as.data.frame(matrix(rep(NA, 3 * nsim), nrow = nsim, byrow = T))
-colnames(raneffs.alpha)  <- paste0("group", 1:J)
-colnames(raneffs.beta)   <- paste0("group", 1:J)
-colnames(fixefs)         <- c('alpha0', 'beta0', 'beta1')
-colnames(r.squared)      <- c('marginal', 'conditional')
-colnames(Sigmas)         <- c('sigma_a', 'sigma_b', 'covar_ab')
-
-
-
-for (i in 1:nsim) {
-  cat("Simulation run", i, "...\n")
+if (use.saved) {
+  load("simulate_glmm_varintslope.RData")
+} else {
   
-  # In all except the first run, we re-use the alphas to get comparable results.
-  if (i == 1) {
-    .run <- sim.glmm.varintnested(J = J, I = I,
-                                  beta1 = beta1, alpha0 = alpha0,
-                                  sigma_a = sigma_b, sigma_b = sigma_b, rho = rho,
-                                  do.raneff = do.raneff, do.fixeff = do.fixeff)
-  } else {
-    .run <- sim.glmm.varintnested(J = J, I = I,
-                                  beta1 = beta1, alpha0 = alpha0,
-                                  sigma_a = sigma_b, sigma_b = sigma_b, rho = rho,
-                                  do.raneff = do.raneff, do.fixeff = do.fixeff,
-                                  raneffs = .run$raneffs)
+  # Matrices for results: GLMM.
+  raneffs.alpha            <- as.data.frame(matrix(rep(NA, J * nsim), nrow = nsim, byrow = T))
+  raneffs.beta             <- as.data.frame(matrix(rep(NA, J * nsim), nrow = nsim, byrow = T))
+  fixefs                   <- as.data.frame(matrix(rep(NA, 3 * nsim), nrow = nsim, byrow = T))
+  r.squared                <- as.data.frame(matrix(rep(NA, 2 * nsim), nrow = nsim, byrow = T))
+  Sigmas                   <- as.data.frame(matrix(rep(NA, 3 * nsim), nrow = nsim, byrow = T))
+  colnames(raneffs.alpha)  <- paste0("group", 1:J)
+  colnames(raneffs.beta)   <- paste0("group", 1:J)
+  colnames(fixefs)         <- c('alpha0', 'beta0', 'beta1')
+  colnames(r.squared)      <- c('marginal', 'conditional')
+  colnames(Sigmas)         <- c('sigma_a', 'sigma_b', 'covar_ab')
+
+
+  for (i in 1:nsim) {
+    cat("Simulation run", i, "...\n")
+    
+    # In all except the first run, we re-use the alphas to get comparable results.
+    if (i == 1) {
+      .run <- sim.glmm.varintnested(J = J, I = I,
+                                    beta1 = beta1, alpha0 = alpha0,
+                                    sigma_a = sigma_b, sigma_b = sigma_b, rho = rho,
+                                    do.raneff = do.raneff, do.fixeff = do.fixeff)
+    } else {
+      .run <- sim.glmm.varintnested(J = J, I = I,
+                                    beta1 = beta1, alpha0 = alpha0,
+                                    sigma_a = sigma_b, sigma_b = sigma_b, rho = rho,
+                                    do.raneff = do.raneff, do.fixeff = do.fixeff,
+                                    raneffs = .run$raneffs)
+    }
+    
+    # Get normal GLMM results.
+    raneffs.alpha[i,]         <- ranef(.run$glmm)[["group"]][,1]
+    raneffs.beta[i,]          <- ranef(.run$glmm)[["group"]][,2] 
+    fixefs[i,]                <- fixef(.run[["glmm"]])
+    if (do.r2) r.squared[i,]  <- r.squaredGLMM(.run[["glmm"]])
+    if (is.nan(as.data.frame(VarCorr(.run[["glmm"]]))[3,"sdcor"]))
+      warning('Covariance is NaN!')
+    else
+      Sigmas[i,]                <- as.data.frame(VarCorr(.run[["glmm"]]))[,"sdcor"]
+  
   }
-  
-  # Get normal GLMM results.
-  raneffs.alpha[i,]         <- ranef(.run$glmm)[["group"]][,1]
-  raneffs.beta[i,]          <- ranef(.run$glmm)[["group"]][,2] 
-  fixefs[i,]                <- fixef(.run[["glmm"]])
-  if (do.r2) r.squared[i,]  <- r.squaredGLMM(.run[["glmm"]])
-  if (is.nan(as.data.frame(VarCorr(.run[["glmm"]]))[3,"sdcor"]))
-    warning('Covariance is NaN!')
-  else
-    Sigmas[i,]                <- as.data.frame(VarCorr(.run[["glmm"]]))[,"sdcor"]
-
 }
 
 # Save the alphas as actually used.
@@ -160,4 +163,8 @@ if (do.r2) {
          lwd = lwd)
 }
 
-save.image(file = "simulate_glmm_varintslope.RData")
+cat("\n\n Difference between marginal and conditional R-squared (95% interval)\n")
+print(quantile(ecdf(r.squared[,2]-r.squared[,1]), probs = c(0.025, 0.975)))
+cat("\n")
+
+if (!use.saved) save.image(file = "simulate_glmm_varintslope.RData")
