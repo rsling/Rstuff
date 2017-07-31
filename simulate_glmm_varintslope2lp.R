@@ -6,17 +6,19 @@ require(MuMIn)
 rm(list = ls())
 set.seed(2707)
 
-source("simulate_glmm_varintslope_fun.R")
+source("simulate_glmm_varintslope2lp_fun.R")
 
 use.saved  <- F
-nsim       <- 20
-J          <-  100
-I          <-  100
-beta0      <-  1
-beta1      <-  0.8
-alpha0     <- -0.5
-sigma_a    <-  0.6
-sigma_b    <-  0.4
+nsim       <-  20
+J          <-  50
+I          <-  50
+beta0      <-   1
+beta1      <-   0.8
+alpha0     <-  -0.5
+gamma_a    <-   1.2
+gamma_b    <-  -0.6
+sigma_a    <-   0.6
+sigma_b    <-   0.4
 rho        <-  -0.5
 do.raneff  <- T
 do.fixeff  <- F
@@ -35,12 +37,12 @@ if (use.saved) {
   # Matrices for results: GLMM.
   raneffs.alpha            <- as.data.frame(matrix(rep(NA, J * nsim), nrow = nsim, byrow = T))
   raneffs.beta             <- as.data.frame(matrix(rep(NA, J * nsim), nrow = nsim, byrow = T))
-  fixefs                   <- as.data.frame(matrix(rep(NA, 3 * nsim), nrow = nsim, byrow = T))
+  fixefs                   <- as.data.frame(matrix(rep(NA, 5 * nsim), nrow = nsim, byrow = T))
   r.squared                <- as.data.frame(matrix(rep(NA, 2 * nsim), nrow = nsim, byrow = T))
   Sigmas                   <- as.data.frame(matrix(rep(NA, 3 * nsim), nrow = nsim, byrow = T))
   colnames(raneffs.alpha)  <- paste0("group", 1:J)
   colnames(raneffs.beta)   <- paste0("group", 1:J)
-  colnames(fixefs)         <- c('alpha0', 'beta0', 'beta1')
+  colnames(fixefs)         <- c('alpha0', 'beta0', 'beta1', "gamma_a", "gamma_b")
   colnames(r.squared)      <- c('marginal', 'conditional')
   colnames(Sigmas)         <- c('sigma_a', 'sigma_b', 'covar_ab')
   
@@ -50,13 +52,15 @@ if (use.saved) {
     
     # In all except the first run, we re-use the alphas to get comparable results.
     if (i == 1) {
-      .run <- sim.glmm.varintnested(J = J, I = I,
+      .run <- sim.glmm.varintslope2lp(J = J, I = I,
                                     beta1 = beta1, alpha0 = alpha0,
+                                    gamma_a = gamma_a, gamma_b = gamma_b,
                                     sigma_a = sigma_b, sigma_b = sigma_b, rho = rho,
                                     do.raneff = do.raneff, do.fixeff = do.fixeff)
     } else {
-      .run <- sim.glmm.varintnested(J = J, I = I,
+      .run <- sim.glmm.varintslope2lp(J = J, I = I,
                                     beta1 = beta1, alpha0 = alpha0,
+                                    gamma_a = gamma_a, gamma_b = gamma_b,
                                     sigma_a = sigma_b, sigma_b = sigma_b, rho = rho,
                                     do.raneff = do.raneff, do.fixeff = do.fixeff,
                                     raneffs = .run$raneffs)
@@ -85,25 +89,44 @@ m.Sigmas <- n.Sigmas-nrow(Sigmas)
 cat("\nFailed runs (NaN in variances):", m.Sigmas)
 
 
-par(mfrow=c(1,1))
+par(mfrow=c(1,2))
 plot(density(fixefs$alpha0),
-     xlim = c(min(c(alpha0, beta0, beta1, as.matrix(fixefs))), max(c(alpha0, beta0, beta1, as.matrix(fixefs)))),
+     xlim = c(min(c(alpha0, beta0, beta1, as.matrix(fixefs)[,1:3])), max(c(alpha0, beta0, beta1, as.matrix(fixefs)[,1:3]))),
      ylim = c(min(c(density(fixefs$alpha0)$y, density(fixefs$beta0)$y, density(fixefs$beta1)$y)),
               max(c(density(fixefs$alpha0)$y, density(fixefs$beta0)$y, density(fixefs$beta1)$y)*1.2) ),
      col = "darkorange", lwd = lwd,
-     main = "Estimates of fixed effects in GLMM",
+     main = "Estimates of fixed effects in GLMM\n(first level)",
      xlab = "Estimates")
 lines(density(fixefs$beta0),
       col = "darkgreen", lwd = lwd)
 lines(density(fixefs$beta1),
       col = "darkred", lwd = lwd)
 abline(v = alpha0, col = "darkorange", lwd = lwd, lty = 3)
-abline(v = beta0, col = "darkred", lwd = lwd, lty = 3)
-abline(v = beta1, col = "darkgreen", lwd = lwd, lty = 3)
+abline(v = beta0, col = "darkgreen", lwd = lwd, lty = 3)
+abline(v = beta1, col = "darkred", lwd = lwd, lty = 3)
 legend("top",
        legend = c("alpha0", "beta0", "beta1"),
        col = c("darkorange", "darkgreen", "darkred"),
        lwd = lwd)
+
+plot(density(fixefs$gamma_a),
+     xlim = c(min(c(gamma_a, gamma_b, as.matrix(fixefs)[,4:5])), max(c(gamma_a, gamma_b, as.matrix(fixefs)[,4:5]))),
+     ylim = c(min(c(density(fixefs$gamma_a)$y, density(fixefs$gamma_b)$y)),
+              max(c(density(fixefs$gamma_a)$y, density(fixefs$gamma_b)$y)*1.2)),
+     col = "darkorange", lwd = lwd,
+     main = "Estimates of fixed effects in GLMM\n(2nd level)",
+     xlab = "Estimates")
+lines(density(fixefs$gamma_b),
+      col = "darkgreen", lwd = lwd)
+abline(v = gamma_a, col = "darkorange", lwd = lwd, lty = 3)
+abline(v = gamma_b, col = "darkgreen", lwd = lwd, lty = 3)
+legend("top",
+       legend = c("gamma_a", "gamma_b"),
+       col = c("darkorange", "darkgreen"),
+       lwd = lwd)
+par(mfrow=c(1,1))
+
+
 
 plot(density(Sigmas$sigma_a),
      xlim = c( min( c( Sigmas$sigma_a , Sigmas$sigma_b, Sigmas$covar_ab)), max( c( Sigmas$sigma_a , Sigmas$sigma_b, Sigmas$covar_ab))),
@@ -167,4 +190,4 @@ cat("\n\n Difference between marginal and conditional R-squared (95% interval)\n
 print(quantile(ecdf(r.squared[,2]-r.squared[,1]), probs = c(0.025, 0.975)))
 cat("\n")
 
-if (!use.saved) save.image(file = "simulate_glmm_varintslope.RData")
+if (!use.saved) save.image(file = "simulate_glmm_varintslope2lp.RData")

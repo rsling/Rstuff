@@ -9,14 +9,14 @@ set.seed(2707)
 source("simulate_glmm_varintslope_fun.R")
 
 use.saved  <- F
-nsim       <- 20
-J          <-  100
-I          <-  100
-beta0      <-  1
-beta1      <-  0.8
-alpha0     <- -0.5
-sigma_a    <-  0.6
-sigma_b    <-  0.4
+nsim       <-  20
+J          <-  20
+I          <-  20
+beta0      <-   1
+beta1      <-   0.8
+alpha0     <-  -0.5
+sigma_a    <-   0.6
+sigma_b    <-   0.4
 rho        <-  -0.5
 do.raneff  <- T
 do.fixeff  <- F
@@ -55,7 +55,7 @@ if (use.saved) {
                                     sigma_a = sigma_b, sigma_b = sigma_b, rho = rho,
                                     do.raneff = do.raneff, do.fixeff = do.fixeff)
     } else {
-      .run <- sim.glmm.varintslop(J = J, I = I,
+      .run <- sim.glmm.varintslope(J = J, I = I,
                                     beta1 = beta1, alpha0 = alpha0,
                                     sigma_a = sigma_b, sigma_b = sigma_b, rho = rho,
                                     do.raneff = do.raneff, do.fixeff = do.fixeff,
@@ -98,8 +98,8 @@ lines(density(fixefs$beta0),
 lines(density(fixefs$beta1),
       col = "darkred", lwd = lwd)
 abline(v = alpha0, col = "darkorange", lwd = lwd, lty = 3)
-abline(v = beta0, col = "darkred", lwd = lwd, lty = 3)
-abline(v = beta1, col = "darkgreen", lwd = lwd, lty = 3)
+abline(v = beta0, col = "darkgreen", lwd = lwd, lty = 3)
+abline(v = beta1, col = "darkred", lwd = lwd, lty = 3)
 legend("top",
        legend = c("alpha0", "beta0", "beta1"),
        col = c("darkorange", "darkgreen", "darkred"),

@@ -9,8 +9,9 @@ sim.glmm.varintslope2lp <- function(
   beta0            =  1,             # Overall slope offset for continuous predictor.
   beta1            =  0.8,           # Fixed effect coefficient 1 (binary factor).
 
-  gamma1           =  0.6,           # Second-level predictor.
-  
+  gamma_a          =  2,             # Second-level intercept.
+  gamma_b          = -0.6,           # Second-level coefficient.
+
   sigma_a          =  0.5,           # Intercept SD.
   sigma_b          =  0.2,           # Slope SD — varying slope is for numeric regressor.
   rho              =  0.4,           # Intcpt-slope covariance.
@@ -19,7 +20,7 @@ sim.glmm.varintslope2lp <- function(
                                      # sigma_a, sigma_b, rho, Sigma are IGNORED if it is specified.
   
   do.raneff        = T,              # Whether random effects model should be run.
-  do.fixeff        = F               # Whether fixed effects model should be run, ignoring random effect structure.
+  do.fixeff        = T               # Whether fixed effects model should be run, ignoring random effect structure.
 ) {
   
   # Total number of observations.
@@ -38,13 +39,13 @@ sim.glmm.varintslope2lp <- function(
     raneffs           <- data.frame(char.seq(1, J),
                                     rmvnorm(J, mean = c(0, 0), sigma = Sigma),
                                     rnorm(J))
-    colnames(raneffs) <- c("group", "alpha", "beta", "gamma")
+    colnames(raneffs) <- c("group", "alpha", "beta", "x_gamma")
     
     # Calculate second-level model.
-    raneffs <- within(raneffs, alpha_modelled <- alpha +  1.2 * gamma)
-    raneffs <- within(raneffs,  beta_modelled <- beta  + -0.8 * gamma)
+    raneffs <- within(raneffs, alpha_modelled <- alpha + gamma_a * x_gamma)
+    raneffs <- within(raneffs,  beta_modelled <- beta  + gamma_b * x_gamma)
   }
-  
+
   observations <- merge(groups, raneffs)
   
   # Put together the data frame with everything in it.
@@ -59,13 +60,13 @@ sim.glmm.varintslope2lp <- function(
   # Generate the data using the actual model.
   observations <- within(observations,
                          y <- rbinom(N, 1,
-                                     prob = inv.logit(alpha0 + alpha_modelled + beta1 * x1 + (beta0 + beta) * x2))
+                                     prob = inv.logit(alpha0 + alpha_modelled + beta1 * x1 + (beta0 + beta_modelled) * x2))
   )
   
   # Calculate random effects model.
   raneff.glmer <- NULL
   if (do.raneff) {
-    raneff.glmer    <-  glmer(y ~ factor(x1) + x2 + (1 + x2 | group),
+    raneff.glmer    <-  glmer(y ~ factor(x1) + x2 + x_gamma + x2 : x_gamma + (1 + x2 | group),
                               data = observations,
                               family=binomial(link=logit))
   }
@@ -87,4 +88,4 @@ sim.glmm.varintslope2lp <- function(
   )
 }
 
-.test.simulate.glmm.varintslope <- sim.glmm.varintnested()
+.test.simulate.glmm.varintslope2lp <- sim.glmm.varintslope2lp()

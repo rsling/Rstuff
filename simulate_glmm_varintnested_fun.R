@@ -103,3 +103,5 @@ sim.glmm.varintnested <- function(
     glm          = fixeff.glm
   )
 }
+
+.test.simulate.glmm.varintnested <- sim.glmm.varintnested()

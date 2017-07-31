@@ -78,4 +78,4 @@ sim.glmm.varintslope <- function(
   )
 }
 
-.test.simulate.glmm.varintslope <- sim.glmm.varintnested()
+.test.simulate.glmm.varintslope <- sim.glmm.varintslope()
