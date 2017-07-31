@@ -8,10 +8,10 @@ set.seed(2707)
 
 source("simulate_glmm_varintslope2lp_fun.R")
 
-use.saved  <- F
-nsim       <-  20
-J          <-  50
-I          <-  50
+use.saved  <- T
+nsim       <-  10
+J          <-  20
+I          <-  20
 beta0      <-   1
 beta1      <-   0.8
 alpha0     <-  -0.5
@@ -31,7 +31,7 @@ lwd.null   <- 1.5
 lty.null   <- 5
 
 if (use.saved) {
-  load("simulate_glmm_varintslope.RData")
+  load("simulate_glmm_varintslope2lp.RData")
 } else {
   
   # Matrices for results: GLMM.
@@ -77,15 +77,17 @@ if (use.saved) {
       Sigmas[i,]                <- as.data.frame(VarCorr(.run[["glmm"]]))[,"sdcor"]
     
   }
+
+  # Save the alphas as actually used.
+  true.raneffs <- .run$raneffs
+  
+  # NaN were turned to NA in loop, remove.
+  n.Sigmas <- nrow(Sigmas) 
+  Sigmas   <- Sigmas[complete.cases(Sigmas),]
+  m.Sigmas <- n.Sigmas-nrow(Sigmas)
 }
 
-# Save the alphas as actually used.
-true.raneffs <- .run$raneffs
 
-# NaN were turned to NA in loop, remove.
-n.Sigmas <- nrow(Sigmas) 
-Sigmas   <- Sigmas[complete.cases(Sigmas),]
-m.Sigmas <- n.Sigmas-nrow(Sigmas)
 cat("\nFailed runs (NaN in variances):", m.Sigmas)
 
 
