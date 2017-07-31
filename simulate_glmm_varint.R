@@ -9,9 +9,9 @@ set.seed(2707)
 source("simulate_glmm_varint_fun.R")
 
 use.saved  <- F
-nsim       <-  20
-J          <-  20
-I          <-  20
+nsim       <-  50
+J          <-  50
+I          <-  50
 beta1      <-   0.8
 beta2      <-   1
 alpha0     <-  -0.5
