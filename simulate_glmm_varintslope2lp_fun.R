@@ -1,3 +1,7 @@
+require(lme4)
+require(boot)
+library(mvtnorm)
+
 char.seq <- function(start, end, by = 1, pad = 4, pad.char = "0") {
   formatC(seq(start, end, by), width = pad, format = "d", flag = pad.char)
 }
@@ -20,7 +24,8 @@ sim.glmm.varintslope2lp <- function(
                                      # sigma_a, sigma_b, rho, Sigma are IGNORED if it is specified.
   
   do.raneff        = T,              # Whether random effects model should be run.
-  do.fixeff        = T               # Whether fixed effects model should be run, ignoring random effect structure.
+  do.fixeff        = T,              # Whether fixed effects model should be run, ignoring random effect structure.
+  do.fixeff.f      = T               # Whether fixed effects model should be run, including random effs. as fixed effs.
 ) {
   
   # Total number of observations.
@@ -70,21 +75,29 @@ sim.glmm.varintslope2lp <- function(
                               data = observations,
                               family=binomial(link=logit))
   }
-  
-  # Fixed effects model.
+
+  # Fixed effects model, ignoring raneff.
   fixeff.glm <- NULL
   if (do.fixeff) {
-    fixeff.glm    <-  glm(y ~ factor(x1) + x2, data = observations,
+    fixeff.glm    <-  glm(y ~ factor(x1) + x2 + x_gamma, data = observations,
                           family=binomial(link=logit))
   }
   
+  # Fixed effects model, including raneffs as fixeffs.
+  fixeff.glm.f <- NULL
+  if (do.fixeff) {
+    fixeff.glm.f <-  glm(y ~ factor(x1) + x2 + x_gamma + group + x2 : x_gamma : group, data = observations,
+                          family=binomial(link=logit))
+  }
+
   # Return results.
   list(
     raneffs      = raneffs,
     Sigma        = Sigma,
     observations = observations,
     glmm         = raneff.glmer,
-    glm          = fixeff.glm
+    glm          = fixeff.glm,
+    glm.f        = fixeff.glm.f
   )
 }
 

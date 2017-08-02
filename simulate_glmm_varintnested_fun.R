@@ -1,3 +1,6 @@
+require(lme4)
+require(boot)
+
 char.seq <- function(start, end, by = 1, pad = 4, pad.char = "0") {
   formatC(seq(start, end, by), width = pad, format = "d", flag = pad.char)
 }
@@ -17,7 +20,8 @@ sim.glmm.varintnested <- function(
   alphas1          = NULL,           # Specify if you want to use constant ranefs across sims. J1, sigma1 are ignored.
   do.raneff        = T,              # Whether random effects model should be run.
   do.raneff.slash  = F,              # Whether random effects model with explicit / notation should be run.
-  do.fixeff        = F               # Whether fixed effects model should be run, ignoring random effect structure.
+  do.fixeff        = T,              # Whether fixed effects model should be run, ignoring random effect structure.
+  do.fixeff.f      = T               # Whether fixed effects model should be run, including random effs. as fixed effs.
 ) {
   
   # Total number of observations.
@@ -85,11 +89,18 @@ sim.glmm.varintnested <- function(
                                    data = observations,
                                    family=binomial(link=logit))
   }
-  
-  # Fixed effects model.
+
+  # Fixed effects model, ignoring raneff.
   fixeff.glm <- NULL
   if (do.fixeff) {
     fixeff.glm    <-  glm(y ~ factor(x1) + x2, data = observations,
+                          family=binomial(link=logit))
+  }
+  
+  # Fixed effects model, including raneffs as fixeffs.
+  fixeff.glm.f <- NULL
+  if (do.fixeff) {
+    fixeff.glm.f    <-  glm(y ~ factor(x1) + x2 + group0 + group1 + group0 : group1, data = observations,
                           family=binomial(link=logit))
   }
   
@@ -100,7 +111,8 @@ sim.glmm.varintnested <- function(
     observations = observations,
     glmm         = raneff.glmer,
     glmm.slash   = raneff.glmer.slash,
-    glm          = fixeff.glm
+    glm          = fixeff.glm,
+    glm.f        = fixeff.glm.f
   )
 }
 
