@@ -1,3 +1,8 @@
+# This work is licensed under a Creative Commons Attribution 4.0 International License.
+# https://creativecommons.org/licenses/by/4.0/
+# Author: Roland Schäfer, Freie Universität Berlin, 2017
+# roland.schaefer@fu-berlin.de
+
 require(lme4)
 require(boot)
 library(mvtnorm)
@@ -8,17 +13,18 @@ set.seed(2707)
 
 source("simulate_glmm_varint_fun.R")
 
-use.saved  <- F
-nsim       <-  50
-J          <-  50
-I          <-  50
-beta1      <-   0.8
-beta2      <-   1
-alpha0     <-  -0.5
-sigma_a    <-   0.6
-do.raneff  <- T
-do.fixeff  <- F
-do.r2      <- T
+use.saved   <- F
+nsim        <-  10
+J           <-  20
+I           <-  20
+beta1       <-   0.8
+beta2       <-   1
+alpha0      <-  -0.5
+sigma_a     <-   0.6
+do.raneff   <- T
+do.fixeff   <- T
+do.fixeff.f <- T
+do.r2       <- T
 
 colfunc    <- colorRampPalette(c("gold", "darkblue"))
 lwd        <- 3
@@ -33,11 +39,11 @@ if (use.saved) {
   # Matrices for results: GLMM.
   raneffs.alpha            <- as.data.frame(matrix(rep(NA, J * nsim), nrow = nsim, byrow = T))
   fixefs                   <- as.data.frame(matrix(rep(NA, 3 * nsim), nrow = nsim, byrow = T))
-  r.squared                <- as.data.frame(matrix(rep(NA, 2 * nsim), nrow = nsim, byrow = T))
+  r.squared                <- as.data.frame(matrix(rep(NA, 4 * nsim), nrow = nsim, byrow = T))
   sigmas                   <- as.data.frame(matrix(rep(NA, 1 * nsim), nrow = nsim, byrow = T))
   colnames(raneffs.alpha)  <- paste0("group", 1:J)
   colnames(fixefs)         <- c('alpha0', 'beta1', 'beta2')
-  colnames(r.squared)      <- c('marginal', 'conditional')
+  colnames(r.squared)      <- c('fixed', 'fixed.f', 'marginal', 'conditional')
   colnames(sigmas)         <- "sigma"
 
   for (i in 1:nsim) {

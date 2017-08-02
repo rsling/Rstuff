@@ -1,3 +1,7 @@
+# This work is licensed under a Creative Commons Attribution 4.0 International License.
+# https://creativecommons.org/licenses/by/4.0/
+# Author: Roland Schäfer, Freie Universität Berlin, 2017
+# roland.schaefer@fu-berlin.de
 
 nsim <- 10000
 n    <- 100
