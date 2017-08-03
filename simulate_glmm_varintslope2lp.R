@@ -100,6 +100,14 @@ cat("\nFailed runs (NaN in variances):", m.Sigmas)
 
 # OUTPUT
 
+cat("\n\n ### Sample GLMM output\n")
+print(summary(.run$glmm))
+cat("\n\n ### Sample GLM output (ignore raneffs)\n")
+print(summary(.run$glm))
+cat("\n\n ### Sample GLM output (raneffs as fixeffs)\n")
+print(summary(.run$glm))
+cat("\n\n")
+
 plot.fixeffs(glmm.fixeffs, c('alpha0', 'beta1', 'beta2', "gamma_a", "gamma_b"), c(alpha0, beta1, beta2, gamma_a, gamma_b),
              c("darkorange", "darkgreen", "darkred", "darkblue", "darkbrown"), lwd = lwd)
 plot.raneff.variance(Sigmas, c("sigma_a", "sigma_b", "rho"), c(sigma_a, sigma_b, rho),

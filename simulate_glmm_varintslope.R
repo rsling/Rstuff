@@ -105,9 +105,15 @@ m.Sigmas <- n.Sigmas-nrow(Sigmas)
 cat("\nFailed runs (NaN in variances):", m.Sigmas)
 
 
-
-
 # OUTPUT
+
+cat("\n\n ### Sample GLMM output\n")
+print(summary(.run$glmm))
+cat("\n\n ### Sample GLM output (ignore raneffs)\n")
+print(summary(.run$glm))
+cat("\n\n ### Sample GLM output (raneffs as fixeffs)\n")
+print(summary(.run$glm))
+cat("\n\n")
 
 plot.fixeffs(glmm.fixeffs, c("alpha0", "beta1", "beta2"), c(alpha0, beta1, beta2),
              c("darkorange", "darkgreen", "darkred"), lwd = lwd)
