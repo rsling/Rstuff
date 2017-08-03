@@ -104,89 +104,21 @@ if (use.saved) {
 }
 
 
-# PLOTS
+# OUTPUT
 
-par(mfrow=c(1,1))
-plot(density(glmm.fixeffs$alpha0),
-     xlim = c(min(c(alpha, beta1, beta2, as.matrix(glmm.fixeffs))),
-              max(c(alpha, beta1, beta2, as.matrix(glmm.fixeffs)))),
-     ylim = c(min(c(density(glmm.fixeffs$alpha0)$y, density(glmm.fixeffs$beta1)$y, density(glmm.fixeffs$beta2)$y)),
-              max(c(density(glmm.fixeffs$alpha0)$y, density(glmm.fixeffs$beta1)$y, density(glmm.fixeffs$beta2)$y)) ),
-     col = "darkorange", lwd = lwd,
-     main = "Estimates of fixed effects in GLMM",
-     xlab = "Estimates")
-lines(density(glmm.fixeffs$beta1),
-      col = "darkgreen", lwd = lwd)
-lines(density(glmm.fixeffs$beta2),
-      col = "darkred", lwd = lwd)
-abline(v = alpha, col = "darkorange", lwd = lwd, lty = 3)
-abline(v = beta1, col = "darkgreen", lwd = lwd, lty = 3)
-abline(v = beta2, col = "darkred", lwd = lwd, lty = 3)
-legend("top",
-       legend = c("beta2", "alpha", "beta1"),
-       col = c("darkred", "darkorange", "darkgreen"),
-       lwd = lwd)
-
-
-
-plot(density(raneff.var$sigma0),
-     xlim = c(min(as.matrix(raneff.var))*0.75, max(as.matrix(raneff.var))*1.5),
-     ylim = c( min(c(density(raneff.var$sigma0)$y, density(raneff.var$sigma1)$y)),
-               max(c(density(raneff.var$sigma0)$y, density(raneff.var$sigma1)$y)) ),
-     col = "darkorange", lwd = lwd,
-     main = "Variance estimates for random effects",
-     xlab = "Estimates")
-lines(density(raneff.var$sigma1), col = "darkgreen", lwd = lwd)
-abline(v = sigma0^2, col = "darkorange", lwd = lwd, lty = 3)
-abline(v = sigma1^2, col = "darkgreen", lwd = lwd, lty = 3)
-legend("topright",
-       legend = c("sigma0 (outer groups)", "sigma1 (inner groups)"),
-       col = c("darkorange", "darkgreen"),
-       lwd = lwd)
-
-
-
-
-par(mfrow=c(2,4))
-alphas0.sample.plot <- sort(sample(1:nrow(unique(alphas0)), size = 8, replace = F))
-for (i in alphas0.sample.plot) {
-  true <- unique(alphas0)[order(unique(alphas0$group0)),][i,2]
-  plot(density(glmm.raneffs.group0[,i]),
-       xlim = c( min(0, c(true, as.matrix(glmm.raneffs.group0[,i]))),
-                 max(c(0, true, as.matrix(glmm.raneffs.group0[,i])))),
-       xlab = "Predicted alpha", main = paste0("J0_", i),
-       lwd = lwd.small, col = colfunc(nrow(unique(alphas0)))[i])
-  abline(v = true, lwd = lwd.small, col = colfunc(nrow(unique(alphas0)))[i], lty = 3)
-  abline(v = 0, lwd = lwd.null, col = "gray", lty = lty.null)
-}
-par(mfrow=c(1,1))
-
-
-
-par(mfrow=c(2,4))
-alphas1.sample.plot <- sort(sample(1:nrow(unique(alphas1)), size = 8, replace = F))
-for (i in 1:nrow(unique(alphas1))) {
-  if (i %in% alphas1.sample.plot) {
-    true <- unique(alphas1)[order(unique(alphas1$group1)),][i,2]
-    plot(density(glmm.raneffs.group1[,i]),
-         xlim = c( min(c(0, true, as.matrix(glmm.raneffs.group1[,i]))),
-                   max(c(0, true, as.matrix(glmm.raneffs.group1[,i])))),
-         xlab = "Predicted alpha", main = paste0("J1_", unique(alphas1)[i,1]),
-       lwd = lwd.small, col = colfunc(8)[ match(i, alphas1.sample.plot)  ])
-    abline(v = true, lwd = lwd.small, col = colfunc(8)[ match(i, alphas1.sample.plot) ], lty = 3)
-    abline(v = 0, lwd = lwd.null, col = "gray", lty = lty.null)
-  }
-}
-par(mfrow=c(1,1))
-
-
-# Plot R2 comparisons.
-if (do.r2) plot.r2(r.squared)
-
-# Print R2 comparison.
-print.r2.comp(r.squared)
-
-# Print comaprison between R2 measures.
+plot.fixeffs(glmm.fixeffs, c("alpha0", "beta1", "beta2"), c(alpha, beta1, beta2),
+             c("darkorange", "darkgreen", "darkred"), lwd = lwd)
+plot.raneff.variance(raneff.var, c("sigma0", "sigma1"), c(sigma0, sigma1),
+                     c("darkorange", "darkgreen"), lwd = lwd)
+plot.raneffs(alphas0, glmm.raneffs.group0, "group0", sample.size = 8, mfrow = c(2,4), lwd = lwd)
+plot.raneffs(alphas1, glmm.raneffs.group1, "group1", sample.size = 8, mfrow = c(2,4), lwd = lwd)
+print.raneff.variance(raneff.var, c(sigma0, sigma1))
 print.fixeff.comp(glmm.p, glm.p)
+print.fixeff.p.comp(glmm.p, glm.p)
 
+if (do.r2) {
+  plot.r2(r.squared, c("darkorange", "darkgreen"), lwd = lwd)
+  print.r2.comp(r.squared)
+}
+  
 if (!use.saved) save.image(file = "simulate_glmm_varintnested.RData")

@@ -90,76 +90,20 @@ if (use.saved) {
 # Save the alphas as actually used.
 true.raneffs <- .run$raneffs
 
-par(mfrow=c(1,1))
-plot(density(glmm.fixeffs$alpha0),
-     xlim = c(min(c(alpha0, beta1, beta2, as.matrix(glmm.fixeffs))),
-              max(c(alpha0, beta1, beta2, as.matrix(glmm.fixeffs)))),
-     ylim = c(min(c(density(glmm.fixeffs$alpha0)$y, density(glmm.fixeffs$beta1)$y, density(glmm.fixeffs$beta2)$y)),
-              max(c(density(glmm.fixeffs$alpha0)$y, density(glmm.fixeffs$beta2)$y, density(glmm.fixeffs$beta2)$y)*1.2) ),
-     col = "darkorange", lwd = lwd,
-     main = "Estimates of fixed effects in GLMM",
-     xlab = "Estimates")
-lines(density(glmm.fixeffs$beta1),
-      col = "darkgreen", lwd = lwd)
-lines(density(glmm.fixeffs$beta2),
-      col = "darkred", lwd = lwd)
-abline(v = alpha0, col = "darkorange", lwd = lwd, lty = 3)
-abline(v = beta1, col = "darkgreen", lwd = lwd, lty = 3)
-abline(v = beta2, col = "darkred", lwd = lwd, lty = 3)
-legend("top",
-       legend = c("alpha0", "beta1", "beta2"),
-       col = c("darkorange", "darkgreen", "darkred"),
-       lwd = lwd)
 
-plot(density(sigmas$sigma),
-     xlim = c( min(sigmas$sigma),
-               max(sigmas$sigma)),
-     ylim = c( min(density(sigmas$sigma)$y),
-               max(density(sigmas$sigma)$y)),
-     col = "darkorange", lwd = lwd,
-     main = "Variance estimates for random effect",
-     xlab = "Estimates")
-abline(v = sigma_a, col = "darkorange", lwd = lwd, lty = 3)
-legend("topleft",
-       legend = "sigma(alpha)",
-       col = "darkorange",
-       lwd = lwd)
+# OUTPUT
 
-
-par(mfrow=c(2,4))
-alphas.sample.plot <- sort(sample(1:nrow(true.raneffs), size = 8, replace = F))
-for (i in alphas.sample.plot) {
-  plot(density(glmm.raneffs.alpha[,i]),
-       xlim = c( min(0, c(true.raneffs[i,"alpha"], as.matrix(glmm.raneffs.alpha[,i]))),
-                 max(c(0, true.raneffs[i,"alpha"], as.matrix(glmm.raneffs.alpha[,i])))),
-       xlab = "Predicted alpha", main = paste0("J_", i),
-       lwd = lwd.small, col = colfunc(nrow(true.raneffs))[i])
-  abline(v = true.raneffs[i,"alpha"], lwd = lwd.small, col = colfunc(nrow(true.raneffs))[i], lty = 3)
-  abline(v = 0, lwd = lwd.null, col = "gray", lty = lty.null)
-}
-par(mfrow=c(1,1))
-
+plot.fixeffs(glmm.fixeffs, c("alpha0", "beta1", "beta2"), c(alpha0, beta1, beta2),
+             c("darkorange", "darkgreen", "darkred"), lwd = lwd)
+plot.raneff.variance(sigmas, "sigma", sigma_a, "darkorange", lwd = lwd)
+plot.raneffs(true.raneffs, glmm.raneffs.alpha, "alpha", sample.size = 8, mfrow = c(2,4), lwd = lwd)
+print.raneff.variance(sigmas, sigma_a)
+print.fixeff.comp(glmm.p, glm.p)
+print.fixeff.p.comp(glmm.p, glm.p)
 
 if (do.r2) {
-  par(mfrow=c(1,1))
-  plot(density(r.squared[,3]),
-       xlim = c( min(c(r.squared[,3], r.squared[,4])),
-                 max(c(r.squared[,3], r.squared[,4]))),
-       ylim = c( min(c(density(r.squared[,3])$y, density(r.squared[,4])$y)),
-                 max(c(density(r.squared[,3])$y, density(r.squared[,4])$y))),
-       col = "darkorange", lwd = lwd,
-       main = "Estimates of R-squared in GLMM",
-       xlab = "Estimates")
-  lines(density(r.squared[,4]), col = "darkgreen", lwd = lwd)
-  legend("topright",
-         legend = c("marginal R-squared", "conditional R-squared"),
-         col = c("darkorange", "darkgreen"),
-         lwd = lwd)
+  plot.r2(r.squared, c("darkorange", "darkgreen"), lwd = lwd)
+  print.r2.comp(r.squared)
 }
-
-cat("\n\n Difference between marginal and conditional\n R-squared in GLMM (95% interval)\n")
-print(quantile(ecdf(r.squared[,4]-r.squared[,3]), probs = c(0.025, 0.975)))
-cat("\n")
-
 
 if (!use.saved) save.image(file = "simulate_glmm_varints.RData")
