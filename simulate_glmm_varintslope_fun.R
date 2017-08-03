@@ -14,20 +14,16 @@ sim.glmm.varintslope <- function(
   J                =  50,            # Number of groups.
   I                =  50,            # Number of obs. per group.
   alpha0           = -0.5,           # Overall intercept.
-  beta0            =  1,             # Overall slope offset for continuous predictor.
-  beta1            =  0.8,           # Fixed effect coefficient 1 (binary factor).
+  beta1            =  1,             # Overall slope offset for continuous predictor.
+  beta2            =  0.8,           # Fixed effect coefficient 1 (binary factor).
 
   sigma_a          =  0.5,           # Intercept SD.
   sigma_b          =  0.2,           # Slope SD — varying slope is for numeric regressor.
   rho              =  0.4,           # Intcpt-slope covariance.
 
-  raneffs          = NULL,           # Specify this if you want to use constant ranefs across sims.
+  raneffs          = NULL            # Specify this if you want to use constant ranefs across sims.
                                      # sigma_a, sigma_b, rho, Sigma are IGNORED if it is specified.
-
-  do.raneff        = T,              # Whether random effects model should be run.
-  do.fixeff        = T,              # Whether fixed effects model should be run, ignoring random effect structure.
-  do.fixeff.f      = T               # Whether fixed effects model should be run, including random effs. as fixed effs.
-) {
+  ) {
   
   # Total number of observations.
   N =  J * I
@@ -59,31 +55,22 @@ sim.glmm.varintslope <- function(
   
   # Generate the data using the actual model.
   observations <- within(observations,
-                         y <- rbinom(N, 1, prob = inv.logit(alpha0 + alpha + beta1 * x1 + (beta0 + beta) * x2))
+                         y <- rbinom(N, 1, prob = inv.logit(alpha0 + alpha + beta2 * x1 + (beta1 + beta) * x2))
   )
   
   # Calculate random effects model.
-  raneff.glmer <- NULL
-  if (do.raneff) {
-    raneff.glmer    <-  glmer(y ~ factor(x1) + x2 + (1 + x2 | group),
-                              data = observations,
-                              family=binomial(link=logit))
-  }
+  raneff.glmer    <-  glmer(y ~ factor(x1) + x2 + (1 + x2 | group),
+                            data = observations,
+                            family=binomial(link=logit))
 
   # Fixed effects model, ignoring raneff.
-  fixeff.glm <- NULL
-  if (do.fixeff) {
-    fixeff.glm    <-  glm(y ~ factor(x1) + x2, data = observations,
-                          family=binomial(link=logit))
-  }
+  fixeff.glm    <-  glm(y ~ factor(x1) + x2, data = observations,
+                        family=binomial(link=logit))
 
   # Fixed effects model, including raneffs as fixeffs.
-  fixeff.glm.f <- NULL
-  if (do.fixeff) {
-    fixeff.glm.f    <-  glm(y ~ factor(x1) + x2 + group + x2 : group, data = observations,
-                          family=binomial(link=logit))
-  }
-  
+  fixeff.glm.f    <-  glm(y ~ factor(x1) + x2 + group + x2 : group, data = observations,
+                        family=binomial(link=logit))
+
   # Return results.
   list(
     raneffs      = raneffs,

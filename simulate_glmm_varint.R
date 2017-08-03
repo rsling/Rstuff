@@ -13,6 +13,7 @@ rm(list = ls())
 set.seed(2707)
 
 source("simulate_glmm_varint_fun.R")
+source("utils.R")
 
 use.saved   <- F
 nsim        <-  10
