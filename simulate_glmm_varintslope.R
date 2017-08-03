@@ -78,7 +78,6 @@ for (i in 1:nsim) {
   glmm.raneffs.beta[i,]    <- ranef(.run$glmm)$group[,2] 
   glmm.fixeffs[i,]         <- fixef(.run$glmm)
   glmm.p[i,]               <- coef(summary(.run$glmm))[,4]
-
   glm.coefs[i,]            <- coef(.run$glm)
   glm.p[i,]                <- coef(summary(.run$glm))[,4]
   glm.f.coefs[i,]          <- coef(.run$glm.f)

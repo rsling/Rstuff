@@ -13,11 +13,9 @@ sim.glmm.varintslope <- function(
   alpha0           = -0.5,           # Overall intercept.
   beta1            =  1,             # Overall slope offset for continuous predictor.
   beta2            =  0.8,           # Fixed effect coefficient 1 (binary factor).
-
   sigma_a          =  0.5,           # Intercept SD.
   sigma_b          =  0.2,           # Slope SD — varying slope is for numeric regressor.
   rho              =  0.4,           # Intcpt-slope covariance.
-
   raneffs          = NULL            # Specify this if you want to use constant ranefs across sims.
                                      # sigma_a, sigma_b, rho, Sigma are IGNORED if it is specified.
   ) {
