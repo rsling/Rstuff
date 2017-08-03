@@ -6,9 +6,7 @@
 require(lme4)
 require(boot)
 
-char.seq <- function(start, end, by = 1, pad = 4, pad.char = "0") {
-  formatC(seq(start, end, by), width = pad, format = "d", flag = pad.char)
-}
+source('utils.R')
 
 sim.glmm.varint <- function(
   J                =  50,            # Number of groups.
@@ -16,12 +14,9 @@ sim.glmm.varint <- function(
   alpha0           = -0.5,           # Overall intercept.
   beta1            =  0.8,           # Fixed effect coefficient for binary predictor.
   beta2            =  1,             # Fixed effect coefficient for continuous predictor.
-  
   sigma_a          =  0.5,           # Varying intercept SD.
-
   raneffs          = NULL            # Specify this if you want to use constant ranefs across sims.
                                      # sigma_a, sigma_b, rho, Sigma are IGNORED if it is specified.
-
 ) {
   
   # Total number of observations.
