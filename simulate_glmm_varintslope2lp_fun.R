@@ -6,10 +6,7 @@
 require(lme4)
 require(boot)
 library(mvtnorm)
-
-char.seq <- function(start, end, by = 1, pad = 4, pad.char = "0") {
-  formatC(seq(start, end, by), width = pad, format = "d", flag = pad.char)
-}
+source("utils.R")
 
 sim.glmm.varintslope2lp <- function(
   J                =  50,            # Number of groups.

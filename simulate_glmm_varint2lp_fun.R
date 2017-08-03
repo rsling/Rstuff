@@ -5,10 +5,8 @@
 
 require(lme4)
 require(boot)
+source("utils.R")
 
-char.seq <- function(start, end, by = 1, pad = 4, pad.char = "0") {
-  formatC(seq(start, end, by), width = pad, format = "d", flag = pad.char)
-}
 
 sim.glmm.varint2lp <- function(
   J                =  50,            # Number of groups.
@@ -16,16 +14,10 @@ sim.glmm.varint2lp <- function(
   alpha0           = -0.5,           # Overall intercept.
   beta1            =  1,             # Fixed effect coefficient (continuous predictor).
   beta2            =  0.8,           # Fixed effect coefficient (binary factor).
-
-  gamma_a          =  2,             # Second-level intercept.
-  sigma_a          =  0.5,           # Intercept SD.
-
-  raneffs          = NULL,           # Specify this if you want to use constant ranefs across sims.
-                                     # sigma_a, sigma_b, rho, Sigma are IGNORED if it is specified.
-  
-  do.raneff        = T,              # Whether random effects model should be run.
-  do.fixeff        = T,              # Whether fixed effects model should be run, ignoring random effect structure.
-  do.fixeff.f      = T               # Whether fixed effects model should be run, including random effs. as fixed effs.
+  gamma            =  2,             # Second-level intercept.
+  sigma            =  0.5,           # Intercept SD.
+  raneffs          = NULL            # Specify this if you want to use constant ranefs across sims.
+                                     # sigma is IGNORED if it is specified.
 ) {
   
   # Total number of observations.
@@ -38,12 +30,12 @@ sim.glmm.varint2lp <- function(
   if (is.null(raneffs)) {
     
     # Var-covar-matrix first.
-    raneffs           <- data.frame( char.seq(1, J), rnorm(J, mean = 0, sd = sigma_a),
-                                     rnorm(J))
+    raneffs           <- data.frame(char.seq(1, J), rnorm(J, mean = 0, sd = sigma),
+                                    rnorm(J))
     colnames(raneffs) <- c("group", "alpha", "x_gamma")
     
     # Calculate second-level model.
-    raneffs <- within(raneffs, alpha_modelled <- alpha + gamma_a * x_gamma)
+    raneffs <- within(raneffs, alpha_modelled <- alpha + gamma * x_gamma)
   }
 
   observations <- merge(groups, raneffs)
@@ -64,27 +56,18 @@ sim.glmm.varint2lp <- function(
   )
   
   # Calculate random effects model.
-  raneff.glmer <- NULL
-  if (do.raneff) {
-    raneff.glmer    <-  glmer(y ~ factor(x1) + x2 + x_gamma + (1 | group),
-                              data = observations,
-                              family=binomial(link=logit))
-  }
-  
+  raneff.glmer    <-  glmer(y ~ factor(x1) + x2 + x_gamma + (1 | group),
+                            data = observations,
+                            family=binomial(link=logit))
+
   # Fixed effects model, ignoring raneff.
-  fixeff.glm <- NULL
-  if (do.fixeff) {
-    fixeff.glm    <-  glm(y ~ factor(x1) + x2 + x_gamma, data = observations,
-                          family=binomial(link=logit))
-  }
+  fixeff.glm    <-  glm(y ~ factor(x1) + x2 + x_gamma, data = observations,
+                        family=binomial(link=logit))
 
   # Fixed effects model, including raneffs as fixeffs.
-  fixeff.glm.f <- NULL
-  if (do.fixeff) {
-    fixeff.glm.f  <-  glm(y ~ factor(x1) + x2 + x_gamma + group + x_gamma : group, data = observations,
-                          family=binomial(link=logit))
-  }
-  
+  fixeff.glm.f  <-  glm(y ~ factor(x1) + x2 + x_gamma + group + x_gamma : group, data = observations,
+                        family=binomial(link=logit))
+
   # Return results.
   list(
     raneffs      = raneffs,

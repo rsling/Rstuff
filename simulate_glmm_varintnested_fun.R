@@ -3,14 +3,13 @@
 # Author: Roland Schäfer, Freie Universität Berlin, 2017
 # roland.schaefer@fu-berlin.de
 
+# NOTE:
+# Fixed effects model including raneffs as fixeffs was DISABLED
+# because it won't converge, and R session hangs.
+
 require(lme4)
 require(boot)
-
-source('utils.R')
-
-# NOTE:
-# Fixed effects model, including raneffs as fixeffs was DISABLED
-# because it won't converge, and machine hangs.
+source("utils.R")
 
 sim.glmm.varintnested <- function(
   nested           = T,              # Nested or non nested data (group1 within group0).
