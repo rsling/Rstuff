@@ -19,12 +19,9 @@ sim.glmm.varint <- function(
   
   sigma_a          =  0.5,           # Varying intercept SD.
 
-  raneffs          = NULL,           # Specify this if you want to use constant ranefs across sims.
+  raneffs          = NULL            # Specify this if you want to use constant ranefs across sims.
                                      # sigma_a, sigma_b, rho, Sigma are IGNORED if it is specified.
 
-  do.raneff        = T,              # Whether random effects model should be run.
-  do.fixeff        = T,              # Whether fixed effects model should be run, ignoring random effect structure.
-  do.fixeff.f      = T               # Whether fixed effects model should be run, including random effs. as fixed effs.
 ) {
   
   # Total number of observations.
@@ -58,26 +55,17 @@ sim.glmm.varint <- function(
   )
   
   # Calculate random effects model.
-  raneff.glmer <- NULL
-  if (do.raneff) {
-    raneff.glmer    <-  glmer(y ~ factor(x1) + x2 + (1 | group),
-                              data = observations,
-                              family=binomial(link=logit))
-  }
-  
+  raneff.glmer    <-  glmer(y ~ factor(x1) + x2 + (1 | group),
+                            data = observations,
+                            family=binomial(link=logit))
+
   # Fixed effects model.
-  fixeff.glm <- NULL
-  if (do.fixeff) {
-    fixeff.glm    <-  glm(y ~ factor(x1) + x2, data = observations,
-                          family=binomial(link=logit))
-  }
-  
+  fixeff.glm    <-  glm(y ~ factor(x1) + x2, data = observations,
+                        family=binomial(link=logit))
+
   # Fixed effects model.
-  fixeff.glm.f <- NULL
-  if (do.fixeff) {
-    fixeff.glm.f    <-  glm(y ~ factor(x1) + x2 + group, data = observations,
-                          family=binomial(link=logit))
-  }
+  fixeff.glm.f    <-  glm(y ~ factor(x1) + x2 + group, data = observations,
+                        family=binomial(link=logit))
 
   # Return results.
   list(
