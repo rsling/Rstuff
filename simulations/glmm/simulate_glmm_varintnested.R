@@ -15,8 +15,8 @@ source("simulate_glmm_varintnested_fun.R")
 source("utils.R")
 
 fileprefix  <- NULL # "./output/var.int.nested"
-nsim        <- 10
-J0          <- 10
+nsim        <- 50
+J0          <- 20
 J1          <- 10
 I           <- 10
 beta1       <-  0.8
@@ -127,8 +127,25 @@ plot.raneffs(alphas1, glmm.raneffs.group1, "group1", sample.size = 8, mfrow = c(
              lwd = lwd, lty.null = lty.null, colfunc = colfunc,
              fileprefix = fileprefix)
 
+
+if (!is.null(fileprefix)) this.fileprefix <- paste0('_estimates', fileprefix) else this.fileprefix <- NULL
+plot.fixeff.comparison(glmm.fixeffs, glm.coefs,
+                       l.col = c("gray", "black"),
+                       p.col = c("darkgreen", "darkblue"),
+                       pch   = c(15, 16),
+                       main = "Comparison of fixed effects estimates",
+                       fileprefix = this.fileprefix)
+if (!is.null(fileprefix)) this.fileprefix <- paste0('_estimates', fileprefix) else this.fileprefix <- NULL
+plot.fixeff.comparison(glmm.p, glm.p, 
+                       l.col = c("gray", "black"),
+                       p.col = c("darkgreen", "darkblue"),
+                       pch   = c(15, 16),
+                       main = "Comparison of p-values for fixed effects",
+                       fileprefix = this.fileprefix)
+
+
 print.raneff.variance(raneff.var, c(sigma0, sigma1))
-print.fixeff.comp(glmm.p, glm.p)
+print.fixeff.comp(glmm.fixeffs, glm.coefs)
 print.fixeff.p.comp(glmm.p, glm.p)
 
 if (do.r2) {

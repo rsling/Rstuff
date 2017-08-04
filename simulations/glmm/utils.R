@@ -84,7 +84,9 @@ print.r2.comp <- function(r.squared) {
 
 
 
-plot.r2 <- function(r.squared, cols, lwd, lty, fileprefix = NULL) {
+plot.r2 <- function(r.squared,
+                    cols, lwd, lty,
+                    fileprefix = NULL) {
   xdens <- c(density(r.squared[,3])$x, density(r.squared[,4])$x)
   ydens <- c(density(r.squared[,3])$y, density(r.squared[,4])$y)
   if (!is.null(fileprefix)) pdf(paste0(fileprefix, "_r.squared_glmm.pdf"))
@@ -131,7 +133,9 @@ plot.r2 <- function(r.squared, cols, lwd, lty, fileprefix = NULL) {
 }
 
 
-plot.raneffs <- function(alphas, raneffs, column_name, sample.size, mfrow, lwd, lty.null, colfunc, fileprefix = NULL) {
+plot.raneffs <- function(alphas, raneffs, column_name, sample.size, mfrow,
+                         lwd, lty.null, colfunc,
+                         fileprefix = NULL) {
   alphas.sample.plot <- sort(sample(1:nrow(unique(alphas)), size = sample.size, replace = F))
   if (!is.null(fileprefix)) pdf(paste0(fileprefix, "_raneffs.pdf"))
   par(mfrow=mfrow)
@@ -152,7 +156,9 @@ plot.raneffs <- function(alphas, raneffs, column_name, sample.size, mfrow, lwd, 
 }
 
 
-plot.raneff.variance <- function(raneff.var, column_names, true_sigmas, cols, lwd, lty, fileprefix = NULL) {
+plot.raneff.variance <- function(raneff.var, column_names, true_sigmas,
+                                 cols, lwd, lty,
+                                 fileprefix = NULL) {
   xlims <- true_sigmas
   ylims <- c()
   for (cn in column_names) {
@@ -182,7 +188,9 @@ plot.raneff.variance <- function(raneff.var, column_names, true_sigmas, cols, lw
 }
 
 
-plot.fixeffs <- function(fixeffs, column_names, true_coefs, cols, lwd, lty = lty, fileprefix = NULL) {
+plot.fixeffs <- function(fixeffs, column_names, true_coefs,
+                         cols, lwd, lty = lty,
+                         fileprefix = NULL) {
   xlims <- true_coefs
   ylims <- c()
   for (cn in column_names) {
@@ -210,3 +218,55 @@ plot.fixeffs <- function(fixeffs, column_names, true_coefs, cols, lwd, lty = lty
          lty = lty)
   if (!is.null(fileprefix)) dev.off()
 }
+
+
+
+plot.fixeff.comparison <- function(glmm.fixeffs, glm.coefs, glm.f.coefs = NULL,
+                                   l.col, p.col, pch, main, fileprefix = NULL) {
+  if (!is.null(glm.f.coefs)) {
+    .effects <- intersect(intersect(colnames(glmm.fixeffs), colnames(glm.coefs)), colnames(glm.f.coefs))
+    .xlim    <- cbind(as.matrix(glmm.fixeffs[, .effects]), as.matrix(glm.coefs[, .effects]), as.matrix(glm.f.coefs[, .effects]))
+    .labels  <- c("GLMM", "GLM (ignore radnom)", "GLM (random as fixed)")
+    .models  <- list(glmm = glmm.fixeffs, glm = glm.coefs, glm.f = glm.f.coefs)
+  } else {
+    .effects <- intersect(colnames(glmm.fixeffs), colnames(glm.coefs))
+    .xlim    <- cbind(as.matrix(glmm.fixeffs[, .effects]), as.matrix(glm.coefs[, .effects]))
+    .labels  <- c("GLMM", "GLM (ign.)")
+    .models  <- list(glmm = glmm.fixeffs, glm = glm.coefs)
+  }
+  .step <- 100%/%(length(.effects)+1)
+  .mstep <- .step%/%5
+  .stops <- seq(.step, .step*length(.effects), .step)
+  
+  if (!is.null(fileprefix)) pdf(paste0(fileprefix, "_fixeff.comparison.pdf"))
+  par(mfrow=c(1,1))
+  plot(0, type = "n",
+       xlim = c( quantile(ecdf(.xlim), 0.005), quantile(ecdf(.xlim), 0.99)),
+       ylim = c(0,100),
+       yaxt = "n", ann = F
+  )
+  title(main = main,
+        xlab = ""
+  )
+  axis(side = 2, at = .stops, labels = .effects, tick = t, cex.axis = 0.9)
+  
+  for (.m in 1:length(.models)) {
+    .ypos <- -0.5*((length(.effects)-1)*.mstep)+((.m-1)*.mstep)
+    for (i in 1:length(.effects)) {
+      .eff  <- .effects[i]
+      .ecdf <- ecdf(.models[[.m]][[.eff]])
+      .y    <- rev(.stops)[i]+.ypos
+      cat(names(.models)[[.m]], .eff, .y, "\n", sep = "  |  ")
+      lines(c(quantile(.ecdf, 0.025), quantile(.ecdf, 0.975)), c(.y, .y),
+            lwd = 2, col = l.col[2])
+      lines(c(quantile(.ecdf, 0.05), quantile(.ecdf, 0.95)), c(.y, .y),
+            lwd = 5, col = l.col[1])
+      points(quantile(.ecdf, 0.5), .y, pch = pch[.m], cex = 2, col = p.col[.m])
+    }
+  }
+  legend("topright", legend = rev(.labels),
+         col = rev(p.col), pch = rev(pch))
+  if (!is.null(fileprefix)) dev.off()
+}
+
+

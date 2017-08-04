@@ -128,8 +128,26 @@ plot.raneffs(true.raneffs, glmm.raneffs.alpha, "beta", sample.size = 8, mfrow = 
              lwd = lwd, lty.null = lty.null, colfunc = colfunc,
              fileprefix = fileprefix)
 
+
+if (!is.null(fileprefix)) this.fileprefix <- paste0('_estimates', fileprefix) else this.fileprefix <- NULL
+plot.fixeff.comparison(glmm.fixeffs, glm.coefs, 
+                       l.col = c("gray", "black"),
+                       p.col = c("darkgreen", "darkblue"),
+                       pch   = c(15, 16),
+                       main = "Comparison of fixed effects estimates",
+                       fileprefix = this.fileprefix)
+if (!is.null(fileprefix)) this.fileprefix <- paste0('_estimates', fileprefix) else this.fileprefix <- NULL
+plot.fixeff.comparison(glmm.p, glm.p,
+                       l.col = c("gray", "black"),
+                       p.col = c("darkgreen", "darkblue"),
+                       pch   = c(15, 16),
+                       main = "Comparison of p-values for fixed effects",
+                       fileprefix = this.fileprefix)
+
+
+
 print.raneff.variance(Sigmas, c(sigma_a, sigma_b, rho))
-print.fixeff.comp(glmm.p, glm.p)
+print.fixeff.comp(glmm.fixeffs, glm.coefs)
 print.fixeff.p.comp(glmm.p, glm.p)
 
 if (do.r2) {

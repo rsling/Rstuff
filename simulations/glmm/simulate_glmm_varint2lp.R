@@ -10,9 +10,9 @@ source("simulate_glmm_varint2lp_fun.R")
 source("utils.R")
 
 fileprefix  <- NULL # "./output/var.int.2level"
-nsim       <-  10
-J          <-  10
-I          <-  10
+nsim       <-  50
+J          <-  30
+I          <-  20
 beta1      <-   1
 beta2      <-   0.8
 alpha0     <-  -0.5
@@ -111,8 +111,25 @@ plot.raneffs(true.raneffs, glmm.raneffs.alpha, "alpha", sample.size = 8, mfrow =
              lwd = lwd, lty.null = lty.null, colfunc = colfunc,
              fileprefix = fileprefix)
 
+
+if (!is.null(fileprefix)) this.fileprefix <- paste0('_estimates', fileprefix) else this.fileprefix <- NULL
+plot.fixeff.comparison(glmm.fixeffs, glm.coefs,
+                       l.col = c("gray", "black"),
+                       p.col = c("darkgreen", "darkblue"),
+                       pch   = c(15, 16),
+                       main = "Comparison of fixed effects estimates",
+                       fileprefix = this.fileprefix)
+if (!is.null(fileprefix)) this.fileprefix <- paste0('_estimates', fileprefix) else this.fileprefix <- NULL
+plot.fixeff.comparison(glmm.p, glm.p, 
+                       l.col = c("gray", "black"),
+                       p.col = c("darkgreen", "darkblue"),
+                       pch   = c(15, 16),
+                       main = "Comparison of p-values for fixed effects",
+                       fileprefix = this.fileprefix)
+
+
 print.raneff.variance(sigmas, sigma)
-print.fixeff.comp(glmm.p, glm.p)
+print.fixeff.comp(glmm.fixeffs, glm.coefs)
 print.fixeff.p.comp(glmm.p, glm.p)
 
 if (do.r2) {
