@@ -90,4 +90,4 @@ sim.glmm.varintnested <- function(
   )
 }
 
-.test.simulate.glmm.varintnested <- sim.glmm.varintnested()
+# .test.simulate.glmm.varintnested <- sim.glmm.varintnested()

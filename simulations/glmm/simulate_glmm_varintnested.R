@@ -14,24 +14,25 @@ set.seed(1131)
 source("simulate_glmm_varintnested_fun.R")
 source("utils.R")
 
-nsim            <- 10
-J0              <- 10
-J1              <- 10
-I               <- 10
-beta1           <-  0.8
-beta2           <- -1.1
-alpha           <- -0.5
-sigma0          <-  0.8
-sigma1          <-  0.4
-nested          <- T    # This creates nested data, nothing in GLMM spec changes.
-do.r2           <- T
+fileprefix  <- NULL # "./output/var.int.nested"
+nsim        <- 10
+J0          <- 10
+J1          <- 10
+I           <- 10
+beta1       <-  0.8
+beta2       <- -1.1
+alpha       <- -0.5
+sigma0      <-  0.8
+sigma1      <-  0.4
+nested      <- T    # This creates nested data, nothing in GLMM spec changes.
+do.r2       <- T
 
-colfunc         <- colorRampPalette(c("gold", "darkblue"))
-lwd             <- 3
-lwd.small       <- 3
-lwd.null        <- 1.5
-lty.null        <- 5
-
+colfunc     <- colorRampPalette(c("gold", "darkblue"))
+lwd         <- 3
+lwd.small   <- 3
+lwd.null    <- 1.5
+lty.null    <- 5
+lty         <- c(1:4,6:10)
 
 # Matrices for results.
 glmm.raneffs.group0           <- as.data.frame(matrix(rep(NA, J0 * nsim),      nrow = nsim, byrow = T))
@@ -88,6 +89,7 @@ for (i in 1:nsim) {
   glm.coefs[i,]             <- coef(.run$glm)
   glm.p[i,]                 <- coef(summary(.run$glm))[,4]
   if (do.r2) {
+    r.squared[i,1]          <- NagelkerkeR2(.run$glm)$R2
     r.squared[i,3:4]        <- suppressMessages(r.squaredGLMM(.run$glmm))
   }
   raneff.var[i,1]           <- as.numeric(VarCorr(.run$glmm)$group0)
@@ -101,6 +103,9 @@ alphas1             <- .run[["alphas1"]]
 
 # OUTPUT
 
+if (!is.null(fileprefix)) sink(paste0(fileprefix, '.txt'))
+dump.parameters()
+
 cat("\n\n ### Sample GLMM output\n")
 print(summary(.run$glmm))
 cat("\n\n ### Sample GLM output (ignore raneffs)\n")
@@ -110,18 +115,27 @@ print(summary(.run$glm))
 cat("\n\n")
 
 plot.fixeffs(glmm.fixeffs, c("alpha0", "beta1", "beta2"), c(alpha, beta1, beta2),
-             c("darkorange", "darkgreen", "darkred"), lwd = lwd)
+             c("darkorange", "darkgreen", "darkred"), lwd = lwd, lty = lty,
+             fileprefix = fileprefix)
 plot.raneff.variance(raneff.var, c("sigma0", "sigma1"), c(sigma0, sigma1),
-                     c("darkorange", "darkgreen"), lwd = lwd)
-plot.raneffs(alphas0, glmm.raneffs.group0, "group0", sample.size = 8, mfrow = c(2,4), lwd = lwd)
-plot.raneffs(alphas1, glmm.raneffs.group1, "group1", sample.size = 8, mfrow = c(2,4), lwd = lwd)
+                     c("darkorange", "darkgreen"), lwd = lwd, lty = lty,
+                     fileprefix = fileprefix)
+plot.raneffs(alphas0, glmm.raneffs.group0, "group0", sample.size = 8, mfrow = c(2,4), 
+             lwd = lwd, lty.null = lty.null, colfunc = colfunc,
+             fileprefix = fileprefix)
+plot.raneffs(alphas1, glmm.raneffs.group1, "group1", sample.size = 8, mfrow = c(2,4),
+             lwd = lwd, lty.null = lty.null, colfunc = colfunc,
+             fileprefix = fileprefix)
+
 print.raneff.variance(raneff.var, c(sigma0, sigma1))
 print.fixeff.comp(glmm.p, glm.p)
 print.fixeff.p.comp(glmm.p, glm.p)
 
 if (do.r2) {
-  plot.r2(r.squared, c("darkorange", "darkgreen"), lwd = lwd)
+  plot.r2(r.squared, c("darkorange", "darkgreen"), lwd = lwd, lty = lty)
   print.r2.comp(r.squared)
 }
-  
+
+if (!is.null(fileprefix)) sink()
+
 save.image(file = "simulate_glmm_varintnested.RData")

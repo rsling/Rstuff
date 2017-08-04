@@ -77,4 +77,4 @@ sim.glmm.varintslope <- function(
   )
 }
 
-.test.simulate.glmm.varintslope <- sim.glmm.varintslope()
+# .test.simulate.glmm.varintslope <- sim.glmm.varintslope()

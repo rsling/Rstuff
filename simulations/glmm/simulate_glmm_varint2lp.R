@@ -9,6 +9,7 @@ set.seed(2707)
 source("simulate_glmm_varint2lp_fun.R")
 source("utils.R")
 
+fileprefix  <- NULL # "./output/var.int.2level"
 nsim       <-  10
 J          <-  10
 I          <-  10
@@ -17,13 +18,15 @@ beta2      <-   0.8
 alpha0     <-  -0.5
 gamma      <-   1.2
 sigma      <-   0.6
+do.r2      <- T
 
 colfunc    <- colorRampPalette(c("gold", "darkblue"))
 lwd        <- 3
 lwd.small  <- 2
 lwd.null   <- 1.5
 lty.null   <- 5
-do.r2      <- T
+lty        <- c(1:4,6:10)
+
   
 # Matrices for results: GLMM.
 glmm.raneffs.alpha            <- as.data.frame(matrix(rep(NA, J * nsim), nrow = nsim, byrow = T))
@@ -74,8 +77,8 @@ for (i in 1:nsim) {
   glm.f.p[i,.names]       <- coef(summary(.run$glm.f))[,4]
 
   if (do.r2) {
-    r.squared[i,1]        <- NagelkerkeR2(.run$glm)
-    r.squared[i,2]        <- NagelkerkeR2(.run$glm.f)
+    r.squared[i,1]        <- NagelkerkeR2(.run$glm)$R2
+    r.squared[i,2]        <- NagelkerkeR2(.run$glm.f)$R2
     r.squared[i,3:4]      <- suppressMessages(r.squaredGLMM(.run$glmm))
   }
   sigmas[i,]              <- as.data.frame(VarCorr(.run$glmm))[,"sdcor"]
@@ -88,6 +91,9 @@ true.raneffs <- .run$raneffs
 
 # OUTPUT
 
+if (!is.null(fileprefix)) sink(paste0(fileprefix, '.txt'))
+dump.parameters()
+
 cat("\n\n ### Sample GLMM output\n")
 print(summary(.run$glmm))
 cat("\n\n ### Sample GLM output (ignore raneffs)\n")
@@ -97,16 +103,23 @@ print(summary(.run$glm))
 cat("\n\n")
 
 plot.fixeffs(glmm.fixeffs, c("alpha0", "beta1", "beta2", "gamma"), c(alpha0, beta1, beta2, gamma),
-             c("darkorange", "darkgreen", "darkred", "darkblue"), lwd = lwd)
-plot.raneff.variance(sigmas, "sigma", sigma, "darkorange", lwd = lwd)
-plot.raneffs(true.raneffs, glmm.raneffs.alpha, "alpha", sample.size = 8, mfrow = c(2,4), lwd = lwd)
+             c("darkorange", "darkgreen", "darkred", "darkblue"), lwd = lwd, lty = lty,
+             fileprefix = fileprefix)
+plot.raneff.variance(sigmas, "sigma", sigma, "darkorange", lwd = lwd, lty = lty,
+                     fileprefix = fileprefix)
+plot.raneffs(true.raneffs, glmm.raneffs.alpha, "alpha", sample.size = 8, mfrow = c(2,4),
+             lwd = lwd, lty.null = lty.null, colfunc = colfunc,
+             fileprefix = fileprefix)
+
 print.raneff.variance(sigmas, sigma)
 print.fixeff.comp(glmm.p, glm.p)
 print.fixeff.p.comp(glmm.p, glm.p)
 
 if (do.r2) {
-  plot.r2(r.squared, c("darkorange", "darkgreen"), lwd = lwd)
+  plot.r2(r.squared, c("darkorange", "darkgreen"), lwd = lwd, lty = lty)
   print.r2.comp(r.squared)
 }
+
+if (!is.null(fileprefix)) sink()
 
 save.image(file = "simulate_glmm_varint2lp.RData")

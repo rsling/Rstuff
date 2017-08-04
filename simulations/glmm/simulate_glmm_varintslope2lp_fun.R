@@ -87,4 +87,4 @@ sim.glmm.varintslope2lp <- function(
   )
 }
 
-.test.simulate.glmm.varintslope2lp <- sim.glmm.varintslope2lp()
+# .test.simulate.glmm.varintslope2lp <- sim.glmm.varintslope2lp()

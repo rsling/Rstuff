@@ -9,6 +9,18 @@ char.seq <- function(start, end, by = 1, pad = 4, pad.char = "0") {
 }
 
 
+dump.parameters <- function() {
+  cat("\n\n ##################################\n")
+      cat(" Parameters used in this simulation\n")
+      cat(" ##################################\n\n")
+  for (obj.name in ls(name = .GlobalEnv)) {
+    obj <- get(obj.name)
+    if (is.vector(obj) & length(obj) == 1) cat(obj.name, "=", obj, "\n")
+  }
+  cat("\n\n")
+  cat(date(), "\n\n")
+}
+
 print.raneff.variance <- function(raneff.var, true.variance) {
   cat("\n\n Distribution of variance estimates for 'random' effects\n")
   cat("\n ### Summary\n")
@@ -72,27 +84,57 @@ print.r2.comp <- function(r.squared) {
 
 
 
-plot.r2 <- function(r.squared, cols, lwd) {
+plot.r2 <- function(r.squared, cols, lwd, lty, fileprefix = NULL) {
   xdens <- c(density(r.squared[,3])$x, density(r.squared[,4])$x)
   ydens <- c(density(r.squared[,3])$y, density(r.squared[,4])$y)
+  if (!is.null(fileprefix)) pdf(paste0(fileprefix, "_r.squared_glmm.pdf"))
   par(mfrow=c(1,1))
   plot(density(r.squared[,3]),
        xlim = c(min(xdens), max(xdens)),
        ylim = c(min(ydens), max(ydens)),
-       col = cols[1], lwd = lwd,
-       main = "Estimates of R-squared",
+       col = cols[1], lwd = lwd, lty = lty[1],
+       main = "Nakagawa & Schielzeth's R-squared (GLMM)",
        xlab = "Estimates")
-  lines(density(r.squared[,4]), col = cols[2], lwd = lwd)
+  lines(density(r.squared[,4]), col = cols[2], lwd = lwd, lty = lty[2])
   legend("topright",
          legend = c("marginal R-squared", "conditional R-squared"),
          col = cols,
-         lwd = lwd)
+         lwd = lwd,
+         lty = lty)
+  if (!is.null(fileprefix)) dev.off()
+
+  if (!is.na(r.squared[1,2])) {
+    xdens <- c(density(r.squared[,1])$x, density(r.squared[,2])$x)
+    ydens <- c(density(r.squared[,1])$y, density(r.squared[,2])$y)    
+  } else {
+    xdens <- density(r.squared[,1])$x
+    ydens <- density(r.squared[,1])$y
+  }
+  if (!is.null(fileprefix)) pdf(paste0(fileprefix, "_r.squared_glm.pdf"))
+  plot(density(r.squared[,1]),
+       xlim = c(min(xdens), max(xdens)),
+       ylim = c(min(ydens), max(ydens)),
+       col = cols[1], lwd = lwd, lty = lty[1],
+       main = "Nagelkerke's R-squared (GLM)",
+       xlab = "Estimates")
+  .legend <- c("ignore random")
+  if (!is.na(r.squared[1,2])) {
+    lines(density(r.squared[,2]), col = cols[2], lwd = lwd, lty = lty[2])
+    .legend <- c(.legend, "random as fixed")
+  }
+  legend("topright",
+         legend = .legend,
+         col = cols,
+         lwd = lwd,
+         lty = lty)
+  if (!is.null(fileprefix)) dev.off()
 }
 
 
-plot.raneffs <- function(alphas, raneffs, column_name, sample.size, mfrow, lwd) {
-  par(mfrow=mfrow)
+plot.raneffs <- function(alphas, raneffs, column_name, sample.size, mfrow, lwd, lty.null, colfunc, fileprefix = NULL) {
   alphas.sample.plot <- sort(sample(1:nrow(unique(alphas)), size = sample.size, replace = F))
+  if (!is.null(fileprefix)) pdf(paste0(fileprefix, "_raneffs.pdf"))
+  par(mfrow=mfrow)
   for (i in 1:nrow(unique(alphas))) {
     if (i %in% alphas.sample.plot) {
       true <- unique(alphas)[order(unique(alphas[[column_name]])),][i,2]
@@ -101,15 +143,16 @@ plot.raneffs <- function(alphas, raneffs, column_name, sample.size, mfrow, lwd) 
                      max(c(0, true, as.matrix(raneffs[,i])))),
            xlab = "Predicted alpha", main = paste0("J1_", unique(alphas)[i,1]),
            lwd = lwd.small, col = colfunc(8)[ match(i, alphas.sample.plot)  ])
-      abline(v = true, lwd = lwd.small, col = colfunc(8)[ match(i, alphas.sample.plot) ], lty = 3)
+      abline(v = true, lwd = lwd.small, col = colfunc(8)[ match(i, alphas.sample.plot) ])
       abline(v = 0, lwd = lwd.null, col = "gray", lty = lty.null)
     }
   }
   par(mfrow=c(1,1))
+  if (!is.null(fileprefix)) dev.off()
 }
 
 
-plot.raneff.variance <- function(raneff.var, column_names, true_sigmas, cols, lwd) {
+plot.raneff.variance <- function(raneff.var, column_names, true_sigmas, cols, lwd, lty, fileprefix = NULL) {
   xlims <- true_sigmas
   ylims <- c()
   for (cn in column_names) {
@@ -117,6 +160,7 @@ plot.raneff.variance <- function(raneff.var, column_names, true_sigmas, cols, lw
     xlims <- c(xlims, .dens$x)
     ylims <- c(ylims, .dens$y)
   }
+  if (!is.null(fileprefix)) pdf(paste0(fileprefix, "_raneff.variance.pdf"))
   par(mfrow=c(1,1))
   plot(0, type="n",
        xlim = c(min(xlims), max(xlims)*1.1),
@@ -126,17 +170,19 @@ plot.raneff.variance <- function(raneff.var, column_names, true_sigmas, cols, lw
        ylab = "Density")
 
   for (i in 1:length(column_names)) {
-    lines(density(raneff.var[[column_names[i]]]), col = cols[i], lwd = lwd)
-    abline(v = true_sigmas[i], col = cols[i], lwd = lwd, lty = 3)
+    lines(density(raneff.var[[column_names[i]]]), col = cols[i], lwd = lwd, lty = lty[i])
+    abline(v = true_sigmas[i], col = cols[i], lwd = lwd, lty = lty[i])
   }
   legend("topright",
          legend = column_names,
          col = cols,
-         lwd = lwd)
+         lwd = lwd,
+         lty = lty)
+  if (!is.null(fileprefix)) dev.off()
 }
 
 
-plot.fixeffs <- function(fixeffs, column_names, true_coefs, cols, lwd) {
+plot.fixeffs <- function(fixeffs, column_names, true_coefs, cols, lwd, lty = lty, fileprefix = NULL) {
   xlims <- true_coefs
   ylims <- c()
   for (cn in column_names) {
@@ -144,6 +190,7 @@ plot.fixeffs <- function(fixeffs, column_names, true_coefs, cols, lwd) {
     xlims <- c(xlims, .dens$x)
     ylims <- c(ylims, .dens$y)
   }
+  if (!is.null(fileprefix)) pdf(paste0(fileprefix, "_fixeffs.pdf"))
   par(mfrow=c(1,1))
   plot(0, type='n',
        xlim = c(min(xlims), max(xlims)*1.1),
@@ -153,11 +200,13 @@ plot.fixeffs <- function(fixeffs, column_names, true_coefs, cols, lwd) {
        ylab = "Density")
   for (i in 1:length(column_names)) {
     lines(density(fixeffs[[column_names[i]]]),
-          col = cols[i], lwd = lwd)
-    abline(v = true_coefs[i], col = cols[i], lwd = lwd, lty = 3)
+          col = cols[i], lwd = lwd, lty = lty[i])
+    abline(v = true_coefs[i], col = cols[i], lwd = lwd, lty = lty[i])
   }
   legend("topright",
          legend = column_names,
          col = cols,
-         lwd = lwd)
+         lwd = lwd,
+         lty = lty)
+  if (!is.null(fileprefix)) dev.off()
 }

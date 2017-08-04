@@ -78,4 +78,4 @@ sim.glmm.varint2lp <- function(
   )
 }
 
-.test.simulate.glmm.varint2lp <- sim.glmm.varint2lp()
+# .test.simulate.glmm.varint2lp <- sim.glmm.varint2lp()

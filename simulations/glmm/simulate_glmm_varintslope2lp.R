@@ -13,6 +13,7 @@ set.seed(1507)
 
 source("simulate_glmm_varintslope2lp_fun.R")
 
+fileprefix  <- NULL # "./output/var.int.slope.2level"
 nsim       <-  10
 J          <-  10
 I          <-  10
@@ -24,13 +25,14 @@ gamma_b    <-  -0.6
 sigma_a    <-   0.6
 sigma_b    <-   0.4
 rho        <-  -0.5
+do.r2      <- T
 
 colfunc    <- colorRampPalette(c("gold", "darkblue"))
 lwd        <- 3
 lwd.small  <- 2
 lwd.null   <- 1.5
 lty.null   <- 5
-do.r2      <- T
+lty        <- c(1:4,6:10)
 
   
 # Matrices for results: GLMM.
@@ -77,7 +79,7 @@ for (i in 1:nsim) {
   glm.coefs[i,]            <- coef(.run$glm)
   glm.p[i,]                <- coef(summary(.run$glm))[,4]
   if (do.r2) {
-    r.squared[i,1]         <- NagelkerkeR2(.run$glm)
+    r.squared[i,1]         <- NagelkerkeR2(.run$glm)$R2
     r.squared[i,]          <- suppressMessages(r.squaredGLMM(.run$glmm))
   }
 
@@ -90,15 +92,17 @@ for (i in 1:nsim) {
 # Save the alphas as actually used.
 true.raneffs <- .run$raneffs
 
+
+# OUTPUT
+
+if (!is.null(fileprefix)) sink(paste0(fileprefix, '.txt'))
+dump.parameters()
+
 # NaN were turned to NA in loop, remove and report.
 n.Sigmas <- nrow(Sigmas) 
 Sigmas   <- Sigmas[complete.cases(Sigmas),]
 m.Sigmas <- n.Sigmas-nrow(Sigmas)
 cat("\nFailed runs (NaN in variances):", m.Sigmas)
-
-
-
-# OUTPUT
 
 cat("\n\n ### Sample GLMM output\n")
 print(summary(.run$glmm))
@@ -108,19 +112,31 @@ cat("\n\n ### Sample GLM output (raneffs as fixeffs)\n")
 print(summary(.run$glm))
 cat("\n\n")
 
-plot.fixeffs(glmm.fixeffs, c('alpha0', 'beta1', 'beta2', "gamma_a", "gamma_b"), c(alpha0, beta1, beta2, gamma_a, gamma_b),
-             c("darkorange", "darkgreen", "darkred", "darkblue", "darkbrown"), lwd = lwd)
+plot.fixeffs(glmm.fixeffs, c('alpha0', 'beta1', 'beta2'), c(alpha0, beta1, beta2),
+             c("darkorange", "darkgreen", "darkred"), lwd = lwd, lty = lty,
+             fileprefix = paste0(fileprefix, "_level1"))
+plot.fixeffs(glmm.fixeffs, c("gamma_a", "gamma_b"), c(gamma_a, gamma_b),
+             c("darkblue", "brown"), lwd = lwd, lty = lty,
+             fileprefix = paste0(fileprefix, "_level2"))
 plot.raneff.variance(Sigmas, c("sigma_a", "sigma_b", "rho"), c(sigma_a, sigma_b, rho),
-                     c("darkorange", "darkgreen", "darkred"), lwd = lwd)
-plot.raneffs(true.raneffs, glmm.raneffs.alpha, "alpha", sample.size = 8, mfrow = c(2,4), lwd = lwd)
-plot.raneffs(true.raneffs, glmm.raneffs.alpha, "beta", sample.size = 8, mfrow = c(2,4), lwd = lwd)
+                     c("darkorange", "darkgreen", "darkred"), lwd = lwd, lty = lty,
+                     fileprefix = fileprefix)
+plot.raneffs(true.raneffs, glmm.raneffs.alpha, "alpha", sample.size = 8, mfrow = c(2,4),
+             lwd = lwd, lty.null = lty.null, colfunc = colfunc,
+             fileprefix = fileprefix)
+plot.raneffs(true.raneffs, glmm.raneffs.alpha, "beta", sample.size = 8, mfrow = c(2,4),
+             lwd = lwd, lty.null = lty.null, colfunc = colfunc,
+             fileprefix = fileprefix)
+
 print.raneff.variance(Sigmas, c(sigma_a, sigma_b, rho))
 print.fixeff.comp(glmm.p, glm.p)
 print.fixeff.p.comp(glmm.p, glm.p)
 
 if (do.r2) {
-  plot.r2(r.squared, c("darkorange", "darkgreen"), lwd = lwd)
+  plot.r2(r.squared, c("darkorange", "darkgreen"), lwd = lwd, lty = lty)
   print.r2.comp(r.squared)
 }
+
+if (!is.null(fileprefix)) sink()
 
 save.image(file = "simulate_glmm_varintslope2lp.RData")
