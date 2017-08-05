@@ -9,9 +9,9 @@ set.seed(2707)
 source("simulate_glmm_varint2lp_fun.R")
 source("utils.R")
 
-fileprefix  <- NULL # "./output/var.int.2level"
-nsim       <-  50
-J          <-  30
+fileprefix  <- "./output/var.int.2level.j=10.i=20"
+nsim       <-  1000
+J          <-  10
 I          <-  20
 beta1      <-   1
 beta2      <-   0.8
@@ -112,14 +112,14 @@ plot.raneffs(true.raneffs, glmm.raneffs.alpha, "alpha", sample.size = 8, mfrow =
              fileprefix = fileprefix)
 
 
-if (!is.null(fileprefix)) this.fileprefix <- paste0('_estimates', fileprefix) else this.fileprefix <- NULL
+if (!is.null(fileprefix)) this.fileprefix <- paste0(fileprefix, '_estimates') else this.fileprefix <- NULL
 plot.fixeff.comparison(glmm.fixeffs, glm.coefs,
                        l.col = c("gray", "black"),
                        p.col = c("darkgreen", "darkblue"),
                        pch   = c(15, 16),
                        main = "Comparison of fixed effects estimates",
                        fileprefix = this.fileprefix)
-if (!is.null(fileprefix)) this.fileprefix <- paste0('_estimates', fileprefix) else this.fileprefix <- NULL
+if (!is.null(fileprefix)) this.fileprefix <- paste0(fileprefix, '_pvalues') else this.fileprefix <- NULL
 plot.fixeff.comparison(glmm.p, glm.p, 
                        l.col = c("gray", "black"),
                        p.col = c("darkgreen", "darkblue"),
@@ -136,6 +136,9 @@ if (do.r2) {
   plot.r2(r.squared, c("darkorange", "darkgreen"), lwd = lwd, lty = lty)
   print.r2.comp(r.squared)
 }
+
+cat("\n\n ### DUMP OF WARNINGS \n\n")
+print(warnings())
 
 if (!is.null(fileprefix)) sink()
 

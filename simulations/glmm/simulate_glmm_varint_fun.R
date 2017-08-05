@@ -72,4 +72,4 @@ sim.glmm.varint <- function(
   )
 }
 
-.test.simulate.glmm.varint <- sim.glmm.varint()
+# .test.simulate.glmm.varint <- sim.glmm.varint()

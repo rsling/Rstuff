@@ -9,6 +9,9 @@ char.seq <- function(start, end, by = 1, pad = 4, pad.char = "0") {
 }
 
 
+
+
+
 dump.parameters <- function() {
   cat("\n\n ##################################\n")
       cat(" Parameters used in this simulation\n")

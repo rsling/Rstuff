@@ -14,11 +14,11 @@ set.seed(1131)
 source("simulate_glmm_varintnested_fun.R")
 source("utils.R")
 
-fileprefix  <- NULL # "./output/var.int.nested"
-nsim        <- 50
-J0          <- 20
+fileprefix  <- "./output/var.int.nested.j0=10.j1=10.i=20"
+nsim        <- 1000
+J0          <- 10
 J1          <- 10
-I           <- 10
+I           <- 20
 beta1       <-  0.8
 beta2       <- -1.1
 alpha       <- -0.5
@@ -128,14 +128,14 @@ plot.raneffs(alphas1, glmm.raneffs.group1, "group1", sample.size = 8, mfrow = c(
              fileprefix = fileprefix)
 
 
-if (!is.null(fileprefix)) this.fileprefix <- paste0('_estimates', fileprefix) else this.fileprefix <- NULL
+if (!is.null(fileprefix)) this.fileprefix <- paste0(fileprefix, '_estimates') else this.fileprefix <- NULL
 plot.fixeff.comparison(glmm.fixeffs, glm.coefs,
                        l.col = c("gray", "black"),
                        p.col = c("darkgreen", "darkblue"),
                        pch   = c(15, 16),
                        main = "Comparison of fixed effects estimates",
                        fileprefix = this.fileprefix)
-if (!is.null(fileprefix)) this.fileprefix <- paste0('_estimates', fileprefix) else this.fileprefix <- NULL
+if (!is.null(fileprefix)) this.fileprefix <- paste0(fileprefix, '_pvalues') else this.fileprefix <- NULL
 plot.fixeff.comparison(glmm.p, glm.p, 
                        l.col = c("gray", "black"),
                        p.col = c("darkgreen", "darkblue"),
@@ -154,5 +154,8 @@ if (do.r2) {
 }
 
 if (!is.null(fileprefix)) sink()
+
+cat("\n\n ### DUMP OF WARNINGS \n\n")
+print(warnings())
 
 save.image(file = "simulate_glmm_varintnested.RData")

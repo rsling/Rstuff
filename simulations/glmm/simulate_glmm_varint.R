@@ -15,9 +15,9 @@ set.seed(2707)
 source("simulate_glmm_varint_fun.R")
 source("utils.R")
 
-fileprefix  <- NULL # "./output/var.int"
-nsim        <-  50
-J           <-  30
+fileprefix  <- "./output/var.int_j=10.i=20"
+nsim        <-  1000
+J           <-  10
 I           <-  20
 beta1       <-   0.8
 beta2       <-   1
@@ -51,6 +51,7 @@ colnames(glm.f.coefs)        <- c('alpha0', 'beta1', 'beta2', paste0("group", 2:
 colnames(glm.f.p)            <- c('alpha0', 'beta1', 'beta2', paste0("group", 2:J))
 colnames(r.squared)          <- c('glm', 'glm.f', 'marginal', 'conditional')
 colnames(sigmas)             <- "sigma"
+
 
 for (i in 1:nsim) {
   cat("Simulation run", i, "...\n")
@@ -109,14 +110,14 @@ plot.raneffs(true.raneffs, glmm.raneffs.alpha, "alpha", sample.size = 8, mfrow =
              lwd = lwd, lty.null = lty.null, colfunc = colfunc,
              fileprefix = fileprefix)
 
-if (!is.null(fileprefix)) this.fileprefix <- paste0('_estimates', fileprefix) else this.fileprefix <- NULL
+if (!is.null(fileprefix)) this.fileprefix <- paste0(fileprefix, '_estimates') else this.fileprefix <- NULL
 plot.fixeff.comparison(glmm.fixeffs, glm.coefs, glm.f.coefs,
                        l.col = c("gray", "black"),
                        p.col = c("darkgreen", "darkblue", "darkred"),
                        pch   = c(15, 16, 18),
                        main = "Comparison of fixed effects estimates",
                        fileprefix = this.fileprefix)
-if (!is.null(fileprefix)) this.fileprefix <- paste0('_estimates', fileprefix) else this.fileprefix <- NULL
+if (!is.null(fileprefix)) this.fileprefix <- paste0(fileprefix, '_pvalues') else this.fileprefix <- NULL
 plot.fixeff.comparison(glmm.p, glm.p, glm.f.p,
                        l.col = c("gray", "black"),
                        p.col = c("darkgreen", "darkblue", "darkred"),
@@ -133,6 +134,9 @@ if (do.r2) {
           fileprefix = fileprefix)
   print.r2.comp(r.squared)
 }
+
+cat("\n\n ### DUMP OF WARNINGS \n\n")
+print(warnings())
 
 if (!is.null(fileprefix)) sink()
 
