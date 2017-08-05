@@ -13,8 +13,8 @@ fileprefix  <- "./output/var.int.2level.j=10.i=20"
 nsim       <-  1000
 J          <-  10
 I          <-  20
-beta1      <-   1
-beta2      <-   0.8
+beta1      <-   0.8
+beta2      <-  -1.3
 alpha0     <-  -0.5
 gamma      <-   1.2
 sigma      <-   0.6
@@ -25,7 +25,7 @@ lwd        <- 3
 lwd.small  <- 2
 lwd.null   <- 1.5
 lty.null   <- 5
-lty        <- c(1:4,6:10)
+lty        <- c(1,2,4,6:10)
 
   
 # Matrices for results: GLMM.

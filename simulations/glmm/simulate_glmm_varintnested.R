@@ -20,7 +20,7 @@ J0          <- 10
 J1          <- 10
 I           <- 20
 beta1       <-  0.8
-beta2       <- -1.1
+beta2       <- -1.3
 alpha       <- -0.5
 sigma0      <-  0.8
 sigma1      <-  0.4
@@ -32,7 +32,7 @@ lwd         <- 3
 lwd.small   <- 3
 lwd.null    <- 1.5
 lty.null    <- 5
-lty         <- c(1:4,6:10)
+lty         <- c(1,2,4,6:10)
 
 # Matrices for results.
 glmm.raneffs.group0           <- as.data.frame(matrix(rep(NA, J0 * nsim),      nrow = nsim, byrow = T))
