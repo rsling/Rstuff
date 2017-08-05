@@ -15,9 +15,9 @@ set.seed(2707)
 source("simulate_glmm_varint_fun.R")
 source("utils.R")
 
-fileprefix  <- "./output/var.int_j=10.i=20"
+fileprefix  <- "./output/var.int_j=20.i=20"
 nsim        <-  1000
-J           <-  10
+J           <-  20
 I           <-  20
 beta1       <-   0.8
 beta2       <-  -1.3
