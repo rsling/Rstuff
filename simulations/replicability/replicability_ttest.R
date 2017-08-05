@@ -7,8 +7,8 @@ rm(list = ls())
 set.seed(3675)
 
 # General settings.
-nsim  <- 1000
-n     <- 20
+nsim  <- 10000
+n     <- 25
 alpha <- 0.05
 
 # For false null simulation.
