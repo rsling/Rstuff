@@ -102,9 +102,9 @@ print(summary(.run$glm))
 cat("\n\n")
 
 plot.fixeffs(glmm.fixeffs, c("alpha0", "beta1", "beta2"), c(alpha0, beta1, beta2),
-             c("darkorange", "darkgreen", "darkred"), lwd = lwd, lty = lty,
+             c("darkgray", "darkgreen", "darkred"), lwd = lwd, lty = lty,
              fileprefix = fileprefix)
-plot.raneff.variance(sigmas, "sigma", sigma, "darkorange", lwd = lwd, lty = lty,
+plot.raneff.variance(sigmas, "sigma", sigma, "darkgray", lwd = lwd, lty = lty,
                      fileprefix = fileprefix)
 plot.raneffs(true.raneffs, glmm.raneffs.alpha, "alpha", sample.size = 8, mfrow = c(2,4),
              lwd = lwd, lty.null = lty.null, colfunc = colfunc,
@@ -130,7 +130,7 @@ print.fixeff.comp(glmm.fixeffs, glm.coefs, glm.f.coefs[,1:3])
 print.fixeff.p.comp(glmm.p, glm.p, glm.f.p[,1:3])
 
 if (do.r2) {
-  plot.r2(r.squared, c("darkorange", "darkgreen"), lwd = lwd, lty = lty,
+  plot.r2(r.squared, c("darkgray", "darkgreen"), lwd = lwd, lty = lty,
           fileprefix = fileprefix)
   print.r2.comp(r.squared)
 }
