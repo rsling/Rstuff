@@ -251,7 +251,7 @@ plot.fixeff.comparison <- function(glmm.fixeffs, glm.coefs, glm.f.coefs = NULL,
   title(main = main,
         xlab = ""
   )
-  axis(side = 2, at = .stops, labels = .effects, tick = t, cex.axis = 0.9)
+  axis(side = 2, at = .stops, labels = rev(.effects), tick = t, cex.axis = 0.9)
   
   for (.m in 1:length(.models)) {
     .ypos <- -0.5*((length(.effects)-1)*.mstep)+((.m-1)*.mstep)
@@ -259,7 +259,7 @@ plot.fixeff.comparison <- function(glmm.fixeffs, glm.coefs, glm.f.coefs = NULL,
       .eff  <- .effects[i]
       .ecdf <- ecdf(.models[[.m]][[.eff]])
       .y    <- rev(.stops)[i]+.ypos
-      cat(names(.models)[[.m]], .eff, .y, "\n", sep = "  |  ")
+#      cat(names(.models)[[.m]], .eff, .y, "\n", sep = "  |  ")
       lines(c(quantile(.ecdf, 0.025), quantile(.ecdf, 0.975)), c(.y, .y),
             lwd = 2, col = l.col[2])
       lines(c(quantile(.ecdf, 0.05), quantile(.ecdf, 0.95)), c(.y, .y),

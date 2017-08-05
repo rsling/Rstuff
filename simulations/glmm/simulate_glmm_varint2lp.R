@@ -142,4 +142,4 @@ print(warnings())
 
 if (!is.null(fileprefix)) sink()
 
-save.image(file = "simulate_glmm_varint2lp.RData")
+if (!is.null(fileprefix)) save.image(file = paste0(fileprefix, ".RData"))

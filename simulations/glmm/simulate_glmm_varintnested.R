@@ -158,4 +158,4 @@ if (!is.null(fileprefix)) sink()
 cat("\n\n ### DUMP OF WARNINGS \n\n")
 print(warnings())
 
-save.image(file = "simulate_glmm_varintnested.RData")
+if (!is.null(fileprefix)) save.image(file = paste0(fileprefix, ".RData"))
