@@ -14,13 +14,24 @@ char.seq <- function(start, end, by = 1, pad = 4, pad.char = "0") {
 
 dump.parameters <- function() {
   cat("\n\n ##################################\n")
-      cat(" Parameters used in this simulation\n")
-      cat(" ##################################\n\n")
-  for (obj.name in ls(name = .GlobalEnv)) {
-    obj <- get(obj.name)
-    if (is.vector(obj) & length(obj) == 1) cat(obj.name, "=", obj, "\n")
-  }
-  cat("\n\n")
+  cat(" Parameters used in this simulation\n")
+  cat(" ##################################\n")
+  if (!is.null(nsim)) cat("\nnsim =", nsim)
+  if (!is.null(J)) cat("\nJ =", J)
+  if (!is.null(J1)) cat("\nJ0 =", J0)
+  if (!is.null(J1)) cat("\nJ1 =", J1)
+  if (!is.null(I)) cat("\nI =", I)
+  if (!is.null(beta1)) cat("\nbeta1 =", beta1)
+  if (!is.null(beta2)) cat("\nbeta2 =", beta2)
+  if (!is.null(alpha)) cat("\nalpha0 =", alpha)
+  if (!is.null(alpha0)) cat("\nalpha0 =", alpha0)
+  if (!is.null(gamma)) cat("\ngamma =", gamma)
+  if (!is.null(sigma)) cat("\nsigma =", sigma)
+  if (!is.null(sigma1)) cat("\nsigma1 =", sigma1)
+  if (!is.null(sigma2)) cat("\nsigma2 =", sigma2)
+  if (!is.null(sigma_a)) cat("\nsigma_a =", sigma_a)
+  if (!is.null(sigma_b)) cat("\nsigma_b =", sigma_b)
+  if (!is.null(rho)) cat("\nrho =", rho)
   cat(date(), "\n\n")
 }
 
@@ -136,28 +147,34 @@ plot.r2 <- function(r.squared,
 }
 
 
-plot.raneffs <- function(alphas, raneffs, column_name, sample.size, mfrow,
+plot.raneffs <- function(alphas, raneffs, column.name, sample.size, mfrow,
                          lwd, lty.null, colfunc,
                          fileprefix = NULL) {
-  alphas.sample.plot <- sort(sample(1:nrow(unique(alphas)), size = sample.size, replace = F))
+
+  # Check whether nos. of true and simulated raneffs are equal.
+  if (!nrow(alphas) == ncol(raneffs)) stop(paste("Numbers of true and simulated random effects not equal: ", nrow(alphas), ncol(raneffs)))
+
+  # Randomly select which effects to plot.
+  .selection <- sort(sample(x = 1:nrow(alphas), replace = F, size = sample.size))
+
   if (!is.null(fileprefix)) pdf(paste0(fileprefix, "_raneffs.pdf"))
   par(mfrow=mfrow)
-  for (i in 1:nrow(unique(alphas))) {
-    if (i %in% alphas.sample.plot) {
-      true <- unique(alphas)[order(unique(alphas[[column_name]])),][i,2]
-      plot(density(raneffs[,i]),
-           xlim = c( min(c(0, true, as.matrix(raneffs[,i]))),
-                     max(c(0, true, as.matrix(raneffs[,i])))),
-           xlab = "Predicted alpha", main = paste0("J1_", unique(alphas)[i,1]),
-           lwd = lwd.small, col = colfunc(8)[ match(i, alphas.sample.plot)  ])
-      abline(v = true, lwd = lwd.small, col = colfunc(8)[ match(i, alphas.sample.plot) ])
-      abline(v = 0, lwd = lwd.null, col = "gray", lty = lty.null)
-    }
+
+  for (i in .selection) {
+    .true <- alphas[i, column.name]
+    .dens <- density(raneffs[,i])
+    plot(.dens,
+         xlim = c( min(c(0, .true, .dens$x)),
+                   max(c(0, .true, .dens$x))),
+         xlab = "Predicted alpha", main = paste0("J1_", colnames(raneffs)[i]),
+         lwd = lwd.small, col = colfunc(8)[ match(i, .selection)  ])
+    abline(v = .true, lwd = lwd.small, col = colfunc(8)[ match(i, .selection) ])
+    abline(v = 0, lwd = lwd.null, col = "gray", lty = lty.null)
   }
   par(mfrow=c(1,1))
+
   if (!is.null(fileprefix)) dev.off()
 }
-
 
 plot.raneff.variance <- function(raneff.var, column_names, true_sigmas,
                                  cols, lwd, lty,
@@ -273,3 +290,11 @@ plot.fixeff.comparison <- function(glmm.fixeffs, glm.coefs, glm.f.coefs = NULL,
 }
 
 
+dump.raneffs <- function(true.raneffs, estimate, print = T) {
+  .eff.name <- colnames(true.raneffs)[2]
+  .est <- t(apply(estimate, 2, function(m) { quantile(m, probs = c(0.025, 0.5, 0.975))}))
+  .est <- as.data.frame(cbind(true.raneffs[,2], .est))
+  colnames(.est) <- c("true", paste0(rep("predicted_", 3), colnames(.est)[2:4]))
+  if (print) print(.est)
+  .est
+}

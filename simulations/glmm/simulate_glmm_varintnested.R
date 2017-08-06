@@ -8,24 +8,23 @@ require(boot)
 require(MuMIn)
 require(fmsb)
 
-rm(list = ls())
 set.seed(1131)
 
 source("simulate_glmm_varintnested_fun.R")
 source("utils.R")
 
-fileprefix  <- "./output/var.int.nested.j0=10.j1=10.i=20"
-nsim        <- 1000
-J0          <- 10
-J1          <- 10
-I           <- 20
+# fileprefix  <- "./output/var.int.nested.j0=10.j1=10.i=20"
+# nsim        <- 1000
+# J0          <- 10
+# J1          <- 10
+# I           <- 10
 beta1       <-  0.8
 beta2       <- -1.3
-alpha       <- -0.5
+alpha0       <- -0.5
 sigma0      <-  0.8
 sigma1      <-  0.4
-nested      <- T    # This creates nested data, nothing in GLMM spec changes.
 do.r2       <- T
+nested      <- T    # This creates nested data, nothing in GLMM spec changes.
 
 colfunc     <- colorRampPalette(c("gold", "darkblue"))
 lwd         <- 3
@@ -43,8 +42,8 @@ glm.coefs                     <- as.data.frame(matrix(rep(NA, 3 * nsim),       n
 glm.p                         <- as.data.frame(matrix(rep(NA, 3 * nsim),       nrow = nsim, byrow = T))
 r.squared                     <- as.data.frame(matrix(rep(NA, 4 * nsim),       nrow = nsim, byrow = T))
 raneff.var                    <- as.data.frame(matrix(rep(NA, 2 * nsim),       nrow = nsim, byrow = T))
-colnames(glmm.raneffs.group0) <- paste0("group", 1:J0)
-colnames(glmm.raneffs.group1) <- paste0("group", 1:(J1*J0))
+colnames(glmm.raneffs.group0) <- paste0("group", char.seq(1, J0))
+colnames(glmm.raneffs.group1) <- paste0("group", char.seq(1, J1*J0))
 colnames(glmm.fixeffs)        <- c('alpha0', 'beta1', 'beta2')
 colnames(glmm.p)              <- c('alpha0', 'beta1', 'beta2')
 colnames(glm.coefs)           <- c('alpha0', 'beta1', 'beta2')
@@ -63,13 +62,13 @@ for (i in 1:nsim) {
     .run <- sim.glmm.varintnested(nested = nested,
                                   J0 = J0, J1 = J1, I = I,
                                   beta1 = beta1, beta2 = beta2,
-                                  alpha = alpha,
+                                  alpha = alpha0,
                                   sigma0 = sigma0, sigma1 = sigma1)
   } else {
     .run <- sim.glmm.varintnested(nested = nested,
                                   J0 = J0, J1 = J1, I = I,
                                   beta1 = beta1, beta2 = beta2,
-                                  alpha = alpha,
+                                  alpha = alpha0,
                                   sigma0 = sigma0, sigma1 = sigma1,
                                   alphas0 = .run$alphas0, alphas1 = .run$alphas1)
   }
@@ -104,7 +103,20 @@ alphas1             <- .run[["alphas1"]]
 # OUTPUT
 
 if (!is.null(fileprefix)) sink(paste0(fileprefix, '.txt'))
-dump.parameters()
+
+cat("\n\n ##################################\n")
+cat(" Parameters used in this simulation\n")
+cat(" ##################################\n")
+if (!is.null(nsim)) cat("\nnsim =", nsim)
+if (!is.null(J1)) cat("\nJ0 =", J0)
+if (!is.null(J1)) cat("\nJ1 =", J1)
+if (!is.null(I)) cat("\nI =", I)
+if (!is.null(beta1)) cat("\nbeta1 =", beta1)
+if (!is.null(beta2)) cat("\nbeta2 =", beta2)
+if (!is.null(alpha0)) cat("\nalpha0 =", alpha0)
+if (!is.null(sigma1)) cat("\nsigma1 =", sigma1)
+if (!is.null(sigma2)) cat("\nsigma2 =", sigma2)
+cat(date(), "\n\n")
 
 cat("\n\n ### Sample GLMM output\n")
 print(summary(.run$glmm))
@@ -153,9 +165,12 @@ if (do.r2) {
   print.r2.comp(r.squared)
 }
 
-if (!is.null(fileprefix)) sink()
+cat("\n\n ### DUMP OF TRUE RANDOM EFFECTS AND PREDICTIONS \n\n")
+alpha.analysis <- dump.raneffs(true.raneffs, glmm.raneffs.alpha)
 
 cat("\n\n ### DUMP OF WARNINGS \n\n")
 print(warnings())
+
+if (!is.null(fileprefix)) sink()
 
 if (!is.null(fileprefix)) save.image(file = paste0(fileprefix, ".RData"))

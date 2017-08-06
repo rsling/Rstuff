@@ -8,15 +8,14 @@ require(boot)
 library(mvtnorm)
 require(MuMIn)
 
-rm(list = ls())
 set.seed(1507)
 
 source("simulate_glmm_varintslope2lp_fun.R")
 
-fileprefix  <- "./output/var.int.slope.2level.j=10.i=20"
-nsim       <-  1000
-J          <-  10
-I          <-  20
+# fileprefix  <- "./output/var.int.slope.2level.j=10.i=20"
+# nsim       <-  1000
+# J          <-  10
+# I          <-  10
 beta1      <-   0.8
 beta2      <-  -1.3
 alpha0     <-  -0.5
@@ -44,8 +43,8 @@ glm.coefs                    <- as.data.frame(matrix(rep(NA, 4 * nsim), nrow = n
 glm.p                        <- as.data.frame(matrix(rep(NA, 4 * nsim), nrow = nsim, byrow = T))
 r.squared                    <- as.data.frame(matrix(rep(NA, 4 * nsim), nrow = nsim, byrow = T))
 Sigmas                       <- as.data.frame(matrix(rep(NA, 3 * nsim), nrow = nsim, byrow = T))
-colnames(glmm.raneffs.alpha) <- paste0("group", 1:J)
-colnames(glmm.raneffs.beta)  <- paste0("group", 1:J)
+colnames(glmm.raneffs.alpha) <- paste0("group", char.seq(1, J))
+colnames(glmm.raneffs.beta)  <- paste0("group", char.seq(1, J))
 colnames(glmm.fixeffs)       <- c('alpha0', 'beta1', 'beta2', "gamma_a", "gamma_b")
 colnames(glmm.p)             <- c('alpha0', 'beta1', 'beta2', "gamma_a", "gamma_b")
 colnames(glm.coefs)           <- c('alpha0', 'beta1', 'beta2', "gamma_a")
@@ -96,7 +95,23 @@ true.raneffs <- .run$raneffs
 # OUTPUT
 
 if (!is.null(fileprefix)) sink(paste0(fileprefix, '.txt'))
-dump.parameters()
+
+
+cat("\n\n ##################################\n")
+cat(" Parameters used in this simulation\n")
+cat(" ##################################\n")
+if (!is.null(nsim)) cat("\nnsim =", nsim)
+if (!is.null(J)) cat("\nJ =", J)
+if (!is.null(I)) cat("\nI =", I)
+if (!is.null(beta1)) cat("\nbeta1 =", beta1)
+if (!is.null(beta2)) cat("\nbeta2 =", beta2)
+if (!is.null(alpha0)) cat("\nalpha0 =", alpha0)
+if (!is.null(sigma_a)) cat("\nsigma_a =", sigma_a)
+if (!is.null(sigma_b)) cat("\nsigma_b =", sigma_b)
+if (!is.null(gamma_a)) cat("\ngamma_a =", gamma_a)
+if (!is.null(gamma_b)) cat("\ngamma_b =", gamma_b)
+if (!is.null(rho)) cat("\nrho =", rho)
+cat(date(), "\n\n")
 
 # NaN were turned to NA in loop, remove and report.
 n.Sigmas <- nrow(Sigmas) 
@@ -155,9 +170,12 @@ if (do.r2) {
   print.r2.comp(r.squared)
 }
 
-if (!is.null(fileprefix)) sink()
+cat("\n\n ### DUMP OF TRUE RANDOM EFFECTS AND PREDICTIONS \n\n")
+alpha.analysis <- dump.raneffs(true.raneffs, glmm.raneffs.alpha)
 
 cat("\n\n ### DUMP OF WARNINGS \n\n")
 print(warnings())
+
+if (!is.null(fileprefix)) sink()
 
 if (!is.null(fileprefix)) save.image(file = paste0(fileprefix, ".RData"))

@@ -7,17 +7,17 @@ require(lme4)
 require(boot)
 library(mvtnorm)
 require(MuMIn)
+require(fmsb)
 
-rm(list = ls())
 set.seed(9817)
 
 source("simulate_glmm_varint2lp_fun.R")
 source("utils.R")
 
-fileprefix  <- "./output/var.int.2level.j=10.i=20"
-nsim       <-  1000
-J          <-  10
-I          <-  20
+# fileprefix  <- "./output/var.int.2level.j=10.i=20"
+# nsim       <-  1000
+# J          <-  10
+# I          <-  10
 beta1      <-   0.8
 beta2      <-  -1.3
 alpha0     <-  -0.5
@@ -43,7 +43,7 @@ glm.f.coefs                   <- as.data.frame(matrix(rep(NA, (2*(J-1)+4) * nsim
 glm.f.p                       <- as.data.frame(matrix(rep(NA, (2*(J-1)+4) * nsim), nrow = nsim, byrow = T))
 r.squared                     <- as.data.frame(matrix(rep(NA, 4 * nsim), nrow = nsim, byrow = T))
 sigmas                        <- as.data.frame(matrix(rep(NA, 1 * nsim), nrow = nsim, byrow = T))
-colnames(glmm.raneffs.alpha)  <- paste0("group", 1:J)
+colnames(glmm.raneffs.alpha)  <- paste0("group", char.seq(1, J))
 colnames(glmm.fixeffs)        <- c('alpha0', 'beta1', 'beta2', "gamma")
 colnames(glmm.p)              <- c('alpha0', 'beta1', 'beta2', "gamma")
 colnames(glm.coefs)           <- c('alpha0', 'beta1', 'beta2', "gamma")
@@ -97,7 +97,18 @@ true.raneffs <- .run$raneffs
 # OUTPUT
 
 if (!is.null(fileprefix)) sink(paste0(fileprefix, '.txt'))
-dump.parameters()
+cat("\n\n ##################################\n")
+cat(" Parameters used in this simulation\n")
+cat(" ##################################\n")
+if (!is.null(nsim)) cat("\nnsim =", nsim)
+if (!is.null(J)) cat("\nJ =", J)
+if (!is.null(I)) cat("\nI =", I)
+if (!is.null(beta1)) cat("\nbeta1 =", beta1)
+if (!is.null(beta2)) cat("\nbeta2 =", beta2)
+if (!is.null(alpha0)) cat("\nalpha0 =", alpha0)
+if (!is.null(gamma)) cat("\ngamma =", gamma)
+if (!is.null(sigma)) cat("\nsigma =", sigma)
+cat(date(), "\n\n")
 
 cat("\n\n ### Sample GLMM output\n")
 print(summary(.run$glmm))
@@ -141,6 +152,9 @@ if (do.r2) {
   plot.r2(r.squared, c("darkgray", "darkgreen"), lwd = lwd, lty = lty)
   print.r2.comp(r.squared)
 }
+
+cat("\n\n ### DUMP OF TRUE RANDOM EFFECTS AND PREDICTIONS \n\n")
+alpha.analysis <- dump.raneffs(true.raneffs, glmm.raneffs.alpha)
 
 cat("\n\n ### DUMP OF WARNINGS \n\n")
 print(warnings())
