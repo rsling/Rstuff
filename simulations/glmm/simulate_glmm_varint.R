@@ -100,7 +100,7 @@ if (!is.null(J)) cat("\nJ =", J)
 if (!is.null(I)) cat("\nI =", I)
 if (!is.null(beta1)) cat("\nbeta1 =", beta1)
 if (!is.null(beta2)) cat("\nbeta2 =", beta2)
-if (!is.null(alpha)) cat("\nalpha0 =", alpha)
+if (!is.null(alpha0)) cat("\nalpha0 =", alpha0)
 if (!is.null(sigma)) cat("\nsigma =", sigma)
 cat(date(), "\n\n")
 

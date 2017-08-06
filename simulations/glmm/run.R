@@ -15,9 +15,9 @@ scripts <- c("simulate_glmm_varint",
              "simulate_glmm_varint2lp",
              "simulate_glmm_varintslope2lp")
 
-nsim    <-  1000
-Js      <- c(10, 20, 50)
-Is      <- c(10, 20, 30)
+nsim    <-  100
+Js      <- c(10)#, 20, 50)
+Is      <- c(10)#, 20, 30)
 
 for (J in Js) {
   for (I in Is) {
