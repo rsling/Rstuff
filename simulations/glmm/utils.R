@@ -12,28 +12,6 @@ char.seq <- function(start, end, by = 1, pad = 4, pad.char = "0") {
 
 
 
-dump.parameters <- function() {
-  cat("\n\n ##################################\n")
-  cat(" Parameters used in this simulation\n")
-  cat(" ##################################\n")
-  if (!is.null(nsim)) cat("\nnsim =", nsim)
-  if (!is.null(J)) cat("\nJ =", J)
-  if (!is.null(J1)) cat("\nJ0 =", J0)
-  if (!is.null(J1)) cat("\nJ1 =", J1)
-  if (!is.null(I)) cat("\nI =", I)
-  if (!is.null(beta1)) cat("\nbeta1 =", beta1)
-  if (!is.null(beta2)) cat("\nbeta2 =", beta2)
-  if (!is.null(alpha)) cat("\nalpha0 =", alpha)
-  if (!is.null(alpha0)) cat("\nalpha0 =", alpha0)
-  if (!is.null(gamma)) cat("\ngamma =", gamma)
-  if (!is.null(sigma)) cat("\nsigma =", sigma)
-  if (!is.null(sigma1)) cat("\nsigma1 =", sigma1)
-  if (!is.null(sigma2)) cat("\nsigma2 =", sigma2)
-  if (!is.null(sigma_a)) cat("\nsigma_a =", sigma_a)
-  if (!is.null(sigma_b)) cat("\nsigma_b =", sigma_b)
-  if (!is.null(rho)) cat("\nrho =", rho)
-  cat(date(), "\n\n")
-}
 
 print.raneff.variance <- function(raneff.var, true.variance) {
   cat("\n\n Distribution of variance estimates for 'random' effects\n")
