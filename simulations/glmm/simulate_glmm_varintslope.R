@@ -9,15 +9,16 @@ library(mvtnorm)
 require(MuMIn)
 require(fmsb)
 
+rm(list = ls())
 set.seed(9298)
 
 source("simulate_glmm_varintslope_fun.R")
 source("utils.R")
 
-# fileprefix  <- "./output/var.int.slope.j=10.i=20"
-# nsim       <-  1000
-# J          <-  10
-# I          <-  10
+fileprefix  <- "./output/var.int.slope.j=50.i=20"
+nsim       <-  1000
+J          <-  50
+I          <-  20
 beta1      <-   0.8
 beta2      <-  -1.3
 alpha0     <-  -0.5

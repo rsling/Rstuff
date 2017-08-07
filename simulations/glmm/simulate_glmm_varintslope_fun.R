@@ -50,7 +50,7 @@ sim.glmm.varintslope <- function(
   
   # Generate the data using the actual model.
   observations <- within(observations,
-                         y <- rbinom(N, 1, prob = inv.logit(alpha0 + alpha + beta2 * x1 + (beta1 + beta) * x2))
+                         y <- rbinom(N, 1, prob = inv.logit(alpha0 + alpha + beta1 * x1 + (beta2 + beta) * x2))
   )
   
   # Calculate random effects model.
