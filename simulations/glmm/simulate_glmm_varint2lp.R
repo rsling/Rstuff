@@ -9,15 +9,16 @@ library(mvtnorm)
 require(MuMIn)
 require(fmsb)
 
+rm(list = ls())
 set.seed(9817)
 
 source("simulate_glmm_varint2lp_fun.R")
 source("utils.R")
 
-# fileprefix  <- "./output/var.int.2level.j=10.i=20"
-# nsim       <-  1000
-# J          <-  10
-# I          <-  10
+fileprefix  <- "./output/var.int.2level.j=10.i=10"
+nsim       <-  1000
+J          <-  10
+I          <-  10
 beta1      <-   0.8
 beta2      <-  -1.3
 alpha0     <-  -0.5
