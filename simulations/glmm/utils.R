@@ -127,13 +127,18 @@ plot.r2 <- function(r.squared,
 
 plot.raneffs <- function(alphas, raneffs, column.name, sample.size, mfrow,
                          lwd, lty.null, colfunc,
+                         use.first.instead.of.random = T,
+                         xlab = "Predicted alpha",
                          fileprefix = NULL) {
 
   # Check whether nos. of true and simulated raneffs are equal.
   if (!nrow(alphas) == ncol(raneffs)) stop(paste("Numbers of true and simulated random effects not equal: ", nrow(alphas), ncol(raneffs)))
 
   # Randomly select which effects to plot.
-  .selection <- sort(sample(x = 1:nrow(alphas), replace = F, size = sample.size))
+  if (use.first.instead.of.random)
+    .selection <- 1:sample.size
+  else
+    .selection <- sort(sample(x = 1:nrow(alphas), replace = F, size = sample.size))
 
   if (!is.null(fileprefix)) pdf(paste0(fileprefix, "_raneffs.pdf"))
   par(mfrow=mfrow)
@@ -144,7 +149,7 @@ plot.raneffs <- function(alphas, raneffs, column.name, sample.size, mfrow,
     plot(.dens,
          xlim = c( min(c(0, .true, .dens$x)),
                    max(c(0, .true, .dens$x))),
-         xlab = "Predicted alpha", main = paste0("J1_", colnames(raneffs)[i]),
+         xlab = xlab, main = paste0("J1_", colnames(raneffs)[i]),
          lwd = lwd.small, col = colfunc(8)[ match(i, .selection)  ])
     abline(v = .true, lwd = lwd.small, col = colfunc(8)[ match(i, .selection) ])
     abline(v = 0, lwd = lwd.null, col = "gray", lty = lty.null)

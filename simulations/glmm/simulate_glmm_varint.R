@@ -15,14 +15,14 @@ set.seed(2707)
 source("simulate_glmm_varint_fun.R")
 source("utils.R")
 
-fileprefix  <- "./output/var.int_j=50.i=50"
-nsim        <-  1000
-J           <-  50
-I           <-  50
+fileprefix  <- NULL # "./output/var.int_j=50.i=50"
+nsim        <-  200
+J           <-  20
+I           <-  10
 beta1       <-   0.8
 beta2       <-  -1.3
-alpha0      <-  -0.5
-sigma       <-   0.6
+alpha0      <-   0 # -0.5
+sigma       <-   1.5
 do.r2       <- T
 
 colfunc    <- colorRampPalette(c("gold", "darkblue"))
@@ -47,8 +47,8 @@ colnames(glmm.fixeffs)       <- c('alpha0', 'beta1', 'beta2')
 colnames(glmm.p)             <- c('alpha0', 'beta1', 'beta2')
 colnames(glm.coefs)          <- c('alpha0', 'beta1', 'beta2')
 colnames(glm.p)              <- c('alpha0', 'beta1', 'beta2')
-colnames(glm.f.coefs)        <- c('alpha0', 'beta1', 'beta2', paste0("group", 2:J))
-colnames(glm.f.p)            <- c('alpha0', 'beta1', 'beta2', paste0("group", 2:J))
+colnames(glm.f.coefs)        <- c('alpha0', 'beta1', 'beta2', paste0("group", char.seq(2, J)))
+colnames(glm.f.p)            <- c('alpha0', 'beta1', 'beta2', paste0("group", char.seq(2, J)))
 colnames(r.squared)          <- c('glm', 'glm.f', 'marginal', 'conditional')
 colnames(sigmas)             <- "sigma"
 
@@ -119,8 +119,13 @@ plot.fixeffs(glmm.fixeffs, c("alpha0", "beta1", "beta2"), c(alpha0, beta1, beta2
 plot.raneff.variance(sigmas, "sigma", sigma, "darkgray", lwd = lwd, lty = lty,
                      fileprefix = fileprefix)
 plot.raneffs(true.raneffs, glmm.raneffs.alpha, "alpha", sample.size = 8, mfrow = c(2,4),
-             lwd = lwd, lty.null = lty.null, colfunc = colfunc,
+             lwd = lwd, lty.null = lty.null, colfunc = colfunc, xlab = "Predicted random effect",
              fileprefix = fileprefix)
+
+plot.raneffs(true.raneffs[-c(1),], glm.f.coefs[,-c(1:3)], "alpha", sample.size = 8, mfrow = c(2,4),
+             lwd = lwd, lty.null = lty.null, colfunc = colfunc, xlab = "Estimated fixed effect",
+             fileprefix = fileprefix)
+
 
 if (!is.null(fileprefix)) this.fileprefix <- paste0(fileprefix, '_estimates') else this.fileprefix <- NULL
 plot.fixeff.comparison(glmm.fixeffs, glm.coefs, glm.f.coefs,
