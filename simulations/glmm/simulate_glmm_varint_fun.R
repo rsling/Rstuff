@@ -11,7 +11,7 @@ source("utils.R")
 sim.glmm.varint <- function(
   J                =  50,            # Number of groups.
   I                =  50,            # Number of obs. per group.
-  alpha0           = -0.5,           # Overall intercept.
+  alpha0           =   0,            # Overall intercept.
   beta1            =  0.8,           # Fixed effect coefficient for binary predictor.
   beta2            =  1,             # Fixed effect coefficient for continuous predictor.
   sigma            =  0.5,           # Varying intercept SD.

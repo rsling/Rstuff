@@ -46,6 +46,8 @@ print.fixeff.comp <- function(glmm.fixeffs, glm.fixeffs, glm.f.fixeffs = NULL) {
   }
 }
 
+
+
 print.fixeff.p.comp <- function(glmm.p, glm.p, glm.f.p = NULL) {
   cat("\n\n Comparison of p-values of 'fixed' effects\n")
   cat("\n ### Summaries\n")
@@ -81,16 +83,22 @@ plot.r2 <- function(r.squared,
                     fileprefix = NULL) {
   xdens <- c(density(r.squared[,3])$x, density(r.squared[,4])$x)
   ydens <- c(density(r.squared[,3])$y, density(r.squared[,4])$y)
+  
   if (!is.null(fileprefix)) pdf(paste0(fileprefix, "_r.squared_glmm.pdf"))
   par(mfrow=c(1,1))
+
+  if (max((density(r.squared[,3])$y)) > max((density(r.squared[,4])$y)))
+    .lpos <- "topright"
+  else .lpos <- "topleft"
+
   plot(density(r.squared[,3]),
        xlim = c(min(xdens), max(xdens)),
-       ylim = c(min(ydens), max(ydens)),
+       ylim = c(min(ydens), max(ydens)*1.2),
        col = cols[1], lwd = lwd, lty = lty[1],
        main = "Nakagawa & Schielzeth's R-squared (GLMM)",
        xlab = "Estimates")
   lines(density(r.squared[,4]), col = cols[2], lwd = lwd, lty = lty[2])
-  legend("topright",
+  legend(.lpos,
          legend = c("marginal R-squared", "conditional R-squared"),
          col = cols,
          lwd = lwd,
@@ -105,6 +113,11 @@ plot.r2 <- function(r.squared,
     ydens <- density(r.squared[,1])$y
   }
   if (!is.null(fileprefix)) pdf(paste0(fileprefix, "_r.squared_glm.pdf"))
+  
+  if (max((density(r.squared[,1])$y)) > max((density(r.squared[,2])$y)))
+    .lpos <- "topright"
+  else .lpos <- "topleft"
+  
   plot(density(r.squared[,1]),
        xlim = c(min(xdens), max(xdens)),
        ylim = c(min(ydens), max(ydens)),
@@ -116,7 +129,7 @@ plot.r2 <- function(r.squared,
     lines(density(r.squared[,2]), col = cols[2], lwd = lwd, lty = lty[2])
     .legend <- c(.legend, "random as fixed")
   }
-  legend("topright",
+  legend(.lpos,
          legend = .legend,
          col = cols,
          lwd = lwd,
@@ -125,11 +138,12 @@ plot.r2 <- function(r.squared,
 }
 
 
-plot.raneffs <- function(alphas, raneffs, column.name, sample.size, mfrow,
-                         lwd, lty.null, colfunc,
-                         use.first.instead.of.random = T,
-                         xlab = "Predicted alpha",
-                         fileprefix = NULL) {
+plot.effs <- function(alphas, raneffs, column.name, sample.size, nrow,
+                      lwd, lty.null, colfunc,
+                      use.first.instead.of.random = T,
+                      xlim.perc = c(0,1),
+                      plot.0 = F,
+                      fileprefix = NULL) {
 
   # Check whether nos. of true and simulated raneffs are equal.
   if (!nrow(alphas) == ncol(raneffs)) stop(paste("Numbers of true and simulated random effects not equal: ", nrow(alphas), ncol(raneffs)))
@@ -140,21 +154,41 @@ plot.raneffs <- function(alphas, raneffs, column.name, sample.size, mfrow,
   else
     .selection <- sort(sample(x = 1:nrow(alphas), replace = F, size = sample.size))
 
-  if (!is.null(fileprefix)) pdf(paste0(fileprefix, "_raneffs.pdf"))
-  par(mfrow=mfrow)
+  if (!is.null(fileprefix)) pdf(paste0(fileprefix, "_effects.pdf"))
+  
+  .m <- matrix(1:sample.size, nrow = nrow, byrow = T)
+  layout(.m)
+  par(mar = c(3, 3, 3, 2))
 
   for (i in .selection) {
     .true <- alphas[i, column.name]
     .dens <- density(raneffs[,i])
+    
+    .xlimdens <- c(quantile(.dens$x, xlim.perc[1]), quantile(.dens$x, xlim.perc[2]))
+    .xlim <- c( min(c(0, .true, .xlimdens)),
+                max(c(0, .true, .xlimdens)))
+
     plot(.dens,
-         xlim = c( min(c(0, .true, .dens$x)),
-                   max(c(0, .true, .dens$x))),
-         xlab = xlab, main = paste0("J1_", colnames(raneffs)[i]),
+         xlim = .xlim,
+         xlab = "", ylab = "", main = paste0(colnames(raneffs)[i]),
          lwd = lwd.small, col = colfunc(8)[ match(i, .selection)  ])
     abline(v = .true, lwd = lwd.small, col = colfunc(8)[ match(i, .selection) ])
-    abline(v = 0, lwd = lwd.null, col = "gray", lty = lty.null)
-  }
-  par(mfrow=c(1,1))
+    if (plot.0) abline(v = 0, lwd = lwd.null, col = "gray", lty = lty.null)
+
+    if (sign(mean(raneffs[,i]) - mean(.xlim)) == -1)
+      .legpos <- "topright"
+    else
+      .legpos <- "topleft"
+    
+    legend(.legpos, legend= c( paste0("mean = ", round(mean(raneffs[,i]), 2)),
+                               "",
+                               paste0("median = ", round(median(raneffs[,i]), 2)),
+                               paste0("2.5% = ", round(quantile(raneffs[,i], 0.025), 2)),
+                               paste0("97.25% = ", round(quantile(raneffs[,i], 0.975), 2)),
+                               "",
+                               paste0("true = ", round(.true, 2))
+                               ), plot=T, bty="n")
+    }
 
   if (!is.null(fileprefix)) dev.off()
 }
@@ -271,6 +305,41 @@ plot.fixeff.comparison <- function(glmm.fixeffs, glm.coefs, glm.f.coefs = NULL,
          col = rev(p.col), pch = rev(pch))
   if (!is.null(fileprefix)) dev.off()
 }
+
+
+plot.fixeff.p.comp <- function(m1, m2, effs,
+                               lty = 1:3, col = 1:3, lwd = 2, pch = 1:3, cex = 0.5,
+                               lines = "none", points = T,
+                               main = "P-value comparison",
+                               xlab = "", ylab ="",
+                               lims = c(0, 1),
+                               fileprefix = NULL) {
+  
+  .m1 <- as.matrix(m1[, effs])
+  .m2 <- as.matrix(m2[, effs])
+  colnames(.m1) <- effs
+  colnames(.m2) <- effs
+  
+  if (!is.null(fileprefix)) pdf(paste0(fileprefix, "_fixeff.p-comparison.pdf"))
+  plot(0, type = "n",
+       axes = T, ann = T,
+       xlim = lims, ylim = lims,
+       xlab=xlab, ylab=ylab,
+       main = main)
+  for (i in 1:length(effs)) {
+    if (lines == "lowess") lines(lowess(.m1[, effs[i]], .m2[, effs[i]]),
+                                 col = col[i],
+                                 lty = lty[i],
+                                 lwd = lwd)
+    else if (lines == "lm") abline(lm(.m1[, effs[i]] ~ .m2[, effs[i]]),
+                                  col = col[i],
+                                  lty = lty[i],
+                                  lwd = lwd)
+    if (points) points(.m1[, effs[i]] ~ .m2[, effs[i]],
+                       col = col[i], cex = cex, pch = pch[i])
+  }
+}
+
 
 
 dump.raneffs <- function(true.raneffs, estimate, print = T) {

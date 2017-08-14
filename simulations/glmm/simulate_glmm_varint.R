@@ -10,22 +10,23 @@ require(MuMIn)
 require(fmsb)
 
 rm(list = ls())
-set.seed(2707)
+setwd("~/Workingcopies/Rstuff/simulations/glmm")
+set.seed(2708)
 
 source("simulate_glmm_varint_fun.R")
 source("utils.R")
 
-fileprefix  <- NULL # "./output/var.int_j=50.i=50"
-nsim        <-  200
-J           <-  20
-I           <-  10
+fileprefix  <- "./output/var.int_j=5.i=20"
+nsim        <-  1000
+J           <-  5
+I           <-  20
 beta1       <-   0.8
 beta2       <-  -1.3
 alpha0      <-   0 # -0.5
 sigma       <-   1.5
 do.r2       <- T
 
-colfunc    <- colorRampPalette(c("gold", "darkblue"))
+colfunc    <- colorRampPalette(c("darkgreen", "darkblue"))
 lwd        <- 3
 lwd.small  <- 2
 lwd.null   <- 1.5
@@ -118,13 +119,21 @@ plot.fixeffs(glmm.fixeffs, c("alpha0", "beta1", "beta2"), c(alpha0, beta1, beta2
              fileprefix = fileprefix)
 plot.raneff.variance(sigmas, "sigma", sigma, "darkgray", lwd = lwd, lty = lty,
                      fileprefix = fileprefix)
-plot.raneffs(true.raneffs, glmm.raneffs.alpha, "alpha", sample.size = 8, mfrow = c(2,4),
-             lwd = lwd, lty.null = lty.null, colfunc = colfunc, xlab = "Predicted random effect",
-             fileprefix = fileprefix)
 
-plot.raneffs(true.raneffs[-c(1),], glm.f.coefs[,-c(1:3)], "alpha", sample.size = 8, mfrow = c(2,4),
-             lwd = lwd, lty.null = lty.null, colfunc = colfunc, xlab = "Estimated fixed effect",
-             fileprefix = fileprefix)
+
+if (!is.null(fileprefix)) this.fileprefix <- paste0(fileprefix, '_random') else this.fileprefix <- NULL
+plot.effs(true.raneffs[-c(1),], glmm.raneffs.alpha[,-c(1)]+glmm.fixeffs[,1], "alpha", sample.size = 4, nrow = 2,
+          lwd = lwd, lty.null = lty.null, colfunc = colfunc,
+          xlim.perc = c(0, 1),
+          plot.0 <- F,
+          fileprefix = this.fileprefix)
+
+if (!is.null(fileprefix)) this.fileprefix <- paste0(fileprefix, '_fixed') else this.fileprefix <- NULL
+plot.effs(true.raneffs[-c(1),], glm.f.coefs[,-c(1:3)]+glm.f.coefs[,1], "alpha", sample.size = 4, nrow = 2,
+          lwd = lwd, lty.null = lty.null, colfunc = colfunc,
+          xlim.perc = c(0.5, 1),
+          plot.0 <- F,
+          fileprefix = this.fileprefix)
 
 
 if (!is.null(fileprefix)) this.fileprefix <- paste0(fileprefix, '_estimates') else this.fileprefix <- NULL
@@ -134,6 +143,9 @@ plot.fixeff.comparison(glmm.fixeffs, glm.coefs, glm.f.coefs,
                        pch   = c(15, 16, 18),
                        main = "Comparison of fixed effects estimates",
                        fileprefix = this.fileprefix)
+
+plot.fixeff.p.comp(glmm.p, glm.p, c("beta1", "beta2"), log = T)
+
 if (!is.null(fileprefix)) this.fileprefix <- paste0(fileprefix, '_pvalues') else this.fileprefix <- NULL
 plot.fixeff.comparison(glmm.p, glm.p, glm.f.p,
                        l.col = c("gray", "black"),
@@ -141,6 +153,46 @@ plot.fixeff.comparison(glmm.p, glm.p, glm.f.p,
                        pch   = c(15, 16, 18),
                        main = "Comparison of p-values for fixed effects",
                        fileprefix = this.fileprefix)
+
+
+if (!is.null(fileprefix)) pdf(paste0(fileprefix, "_fixeff.p-comparison.pdf"))
+par(mfrow=c(1,2))
+plot.fixeff.p.comp(glmm.p, glm.f.p, c("beta1"), 
+                   lims = c(0, 1),
+                   col = c("darkgreen"),
+                   pch = 18, lty = 2,
+                   xlab="GLMM", ylab="GLM (ignoring grouping factor)",
+                   main="beta1",
+                   lines = "lowess")
+plot.fixeff.p.comp(glmm.p, glm.f.p, c("beta2"), 
+                   lims = c(0, 0.3),
+                   col = c("darkblue"),
+                   pch = 18, lty = 2,
+                   xlab="GLMM", ylab="GLM (ignorign grouping factor)",
+                   main="beta2",
+                   lines = "lowess")
+if (!is.null(fileprefix)) dev.off()
+par(mfrow=c(1,1))
+
+
+
+# par(mfrow=c(1,2))
+# plot.fixeff.p.comp(glm.p, glm.f.p, c("beta1"), 
+#                    lims = c(0, 1),
+#                    col = c("darkgreen"),
+#                    pch = 18, lty = 2,
+#                    xlab="GLM (ignoring grouping factor)", ylab="GLM (grouping factor as fixed)",
+#                    main="beta1",
+#                    lines = "lowess")
+# plot.fixeff.p.comp(glm.p, glm.f.p, c("beta2"), 
+#                    lims = c(0, 0.3),
+#                    col = c("darkblue"),
+#                    pch = 18, lty = 2,
+#                    xlab="GLM (ignoring grouping factor)", ylab="GLM (grouping factor as fixed)",
+#                    main="beta2",
+#                    lines = "lowess")
+# par(mfrow=c(1,1))
+
 
 print.raneff.variance(sigmas, sigma)
 print.fixeff.comp(glmm.fixeffs, glm.coefs, glm.f.coefs[,1:3])
